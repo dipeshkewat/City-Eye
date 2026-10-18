@@ -1,0 +1,40 @@
+﻿# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Virtual Envs
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Node & Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Large ML Datasets & Training Checkpoints (>100MB blocked by GitHub)
+ml/datasets/
+ml/training/runs/
+runs/
+*.mp4
+*.avi
+*.mkv
+
+# Uploads & Media
+backend/uploads/evidence/*.jpg
+backend/uploads/resolution/*.jpg
+!backend/uploads/evidence/.gitkeep
+!backend/uploads/resolution/.gitkeep
+
+# IDEs & System
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
