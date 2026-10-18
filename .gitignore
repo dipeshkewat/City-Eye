@@ -17,13 +17,19 @@ dist/
 dist-ssr/
 *.local
 
-# Large ML Datasets & Training Checkpoints (>100MB blocked by GitHub)
+# Large ML Datasets & Training Checkpoints
 ml/datasets/
 ml/training/runs/
 runs/
 *.mp4
 *.avi
 *.mkv
+*.pt
+!ml/models/best.pt
+
+# Internal documents
+*.docx
+*.pdf
 
 # Uploads & Media
 backend/uploads/evidence/*.jpg
