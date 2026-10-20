@@ -64,6 +64,7 @@ export default function App() {
                 }
               >
                 <Route path="/officer" element={<OfficerDashboard />} />
+                <Route path="/officer/map" element={<SeniorMap />} />
                 <Route path="/officer/reports" element={<OfficerReports />} />
                 <Route path="/officer/cameras" element={<OfficerCameras />} />
               </Route>
