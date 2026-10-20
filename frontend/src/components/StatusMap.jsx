@@ -11,12 +11,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom Camera Icon
+// Custom Camera Icon with clean SVG
 const cameraIcon = new L.DivIcon({
   className: 'custom-camera-pin',
-  html: `<div style="background: #1E293B; border: 2px solid #38BDF8; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);"><span style="font-size: 11px;">📹</span></div>`,
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
+  html: `<div style="background: #0F172A; border: 2px solid #38BDF8; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(56, 189, 248, 0.7); cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg></div>`,
+  iconSize: [26, 26],
+  iconAnchor: [13, 13],
 });
 
 export const DEFECT_CONFIG = {
@@ -35,10 +35,29 @@ export const STATUS_CONFIG = {
   rejected: { label: 'Rejected', color: '#EF4444' }
 };
 
+const BASEMAP_TILES = {
+  dark: {
+    label: 'Dark Canvas',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri &mdash; Dark Gray Canvas (Clean, Free)',
+  },
+  osm: {
+    label: 'OpenStreetMap',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors',
+  },
+  satellite: {
+    label: 'Satellite',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri World Imagery',
+  },
+};
+
 export default function StatusMap({ reports = [], cameras = [] }) {
   const [selectedType, setSelectedType] = useState('all');
   const [colorMode, setColorMode] = useState('type'); // 'type' | 'status'
   const [showCameras, setShowCameras] = useState(true);
+  const [basemap, setBasemap] = useState('dark');
 
   const center = [19.0760, 72.8777];
 
@@ -81,6 +100,8 @@ export default function StatusMap({ reports = [], cameras = [] }) {
     return reports.filter((r) => getProblemType(r) === selectedType);
   }, [reports, selectedType]);
 
+  const activeTileConfig = BASEMAP_TILES[basemap] || BASEMAP_TILES.dark;
+
   return (
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       {/* Map Control Header */}
@@ -116,7 +137,7 @@ export default function StatusMap({ reports = [], cameras = [] }) {
               transition: 'all 0.15s ease'
             }}
           >
-            All Defect Types ({counts.all})
+            All Types ({counts.all})
           </button>
 
           <button
@@ -152,7 +173,7 @@ export default function StatusMap({ reports = [], cameras = [] }) {
               transition: 'all 0.15s ease'
             }}
           >
-            🗑️ Garbage Dumps ({counts.garbage})
+            🗑️ Garbage ({counts.garbage})
           </button>
 
           <button
@@ -174,33 +195,58 @@ export default function StatusMap({ reports = [], cameras = [] }) {
           </button>
         </div>
 
-        {/* View Controls */}
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center', fontSize: 12 }}>
+        {/* View Controls & Basemap Switcher */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 12, flexWrap: 'wrap' }}>
+          {/* Basemap Switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#1E293B', padding: '3px 6px', borderRadius: 6 }}>
+            <span style={{ color: '#94A3B8', fontSize: 11, marginRight: 2 }}>Map:</span>
+            {Object.entries(BASEMAP_TILES).map(([key, cfg]) => (
+              <button
+                key={key}
+                onClick={() => setBasemap(key)}
+                style={{
+                  background: basemap === key ? '#3B82F6' : 'transparent',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '2px 8px',
+                  borderRadius: 4,
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  fontWeight: basemap === key ? 700 : 400
+                }}
+              >
+                {cfg.label}
+              </button>
+            ))}
+          </div>
+
           {/* Color Mode Switcher */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1E293B', padding: '3px 8px', borderRadius: 6 }}>
-            <span style={{ color: '#94A3B8' }}>Color by:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#1E293B', padding: '3px 6px', borderRadius: 6 }}>
+            <span style={{ color: '#94A3B8', fontSize: 11, marginRight: 2 }}>Color:</span>
             <button
               onClick={() => setColorMode('type')}
               style={{
-                background: colorMode === 'type' ? '#3B82F6' : 'transparent',
+                background: colorMode === 'type' ? '#0EA5E9' : 'transparent',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '2px 8px',
                 borderRadius: 4,
+                fontSize: 11,
                 cursor: 'pointer',
                 fontWeight: colorMode === 'type' ? 700 : 400
               }}
             >
-              Defect Type
+              Defect
             </button>
             <button
               onClick={() => setColorMode('status')}
               style={{
-                background: colorMode === 'status' ? '#3B82F6' : 'transparent',
+                background: colorMode === 'status' ? '#0EA5E9' : 'transparent',
                 color: '#FFFFFF',
                 border: 'none',
                 padding: '2px 8px',
                 borderRadius: 4,
+                fontSize: 11,
                 cursor: 'pointer',
                 fontWeight: colorMode === 'status' ? 700 : 400
               }}
@@ -210,14 +256,14 @@ export default function StatusMap({ reports = [], cameras = [] }) {
           </div>
 
           {/* Toggle Cameras */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#CBD5E1', cursor: 'pointer' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#CBD5E1', cursor: 'pointer', fontSize: 12 }}>
             <input
               type="checkbox"
               checked={showCameras}
               onChange={(e) => setShowCameras(e.target.checked)}
               style={{ accentColor: '#38BDF8', cursor: 'pointer' }}
             />
-            Show CCTV Cameras ({cameras.length})
+            Show Cameras ({cameras.length})
           </label>
         </div>
       </div>
@@ -225,14 +271,16 @@ export default function StatusMap({ reports = [], cameras = [] }) {
       {/* Map Canvas */}
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <MapContainer
+          key={basemap}
           center={center}
           zoom={12}
           style={{ height: '100%', width: '100%', background: '#09131F' }}
           zoomControl={true}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors & CartoDB'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            key={activeTileConfig.url}
+            attribution={activeTileConfig.attribution}
+            url={activeTileConfig.url}
           />
 
           {/* CCTV Cameras Markers */}
@@ -243,14 +291,14 @@ export default function StatusMap({ reports = [], cameras = [] }) {
               return (
                 <Marker key={`cam-${cam.id}`} position={coords} icon={cameraIcon}>
                   <Popup>
-                    <div style={{ padding: 4, minWidth: 190, color: '#0F172A' }}>
+                    <div style={{ padding: 4, minWidth: 200, color: '#0F172A' }}>
                       <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>📹 {cam.name}</div>
                       <div style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>{cam.address}</div>
                       <div style={{ fontSize: 10, color: '#0284C7', fontWeight: 600 }}>
                         GPS: {coords[0].toFixed(4)}, {coords[1].toFixed(4)}
                       </div>
                       <span style={{ display: 'inline-block', marginTop: 4, fontSize: 10, background: '#E0F2FE', color: '#0369A1', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
-                        ● Active CCTV Feed
+                        ● Active Live Feed
                       </span>
                     </div>
                   </Popup>
@@ -388,11 +436,11 @@ export default function StatusMap({ reports = [], cameras = [] }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#0EA5E9' }}></span>
-                <span>In Progress (Crew on Site)</span>
+                <span>In Progress</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#EF4444' }}></span>
-                <span>Rejected False Positive</span>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10B981' }}></span>
+                <span>Resolved</span>
               </div>
             </div>
           )}

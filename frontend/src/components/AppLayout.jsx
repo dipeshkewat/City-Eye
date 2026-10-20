@@ -1,19 +1,22 @@
 ﻿import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { useReports } from '../context/ReportsContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   LayoutDashboard,
   FileText,
   Camera,
+  MapPin,
   ClipboardList,
   BarChart3,
-  MapPin,
+  RotateCcw,
   LogOut,
   Sun,
   Moon,
-  RotateCcw,
+  ChevronRight,
+  Search,
+  Bell,
 } from 'lucide-react';
-import { useAuth } from '../auth/AuthContext';
-import { useReports } from '../context/ReportsContext';
-import { useTheme } from '../context/ThemeContext';
 import CityEyeLogo from './CityEyeLogo';
 
 const ROLE_NAV = {
@@ -71,120 +74,160 @@ export default function AppLayout() {
     }
   };
 
+  const getInitials = (name) =>
+    (name || 'User').split(' ').map((n) => n[0]).join('').toUpperCase();
+
+  const formatRole = (role) =>
+    (role || 'officer').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
   return (
-    <div className="app-shell">
-      {/* Sidebar Only */}
-      <aside className="sidebar">
-        {/* Brand */}
-        <div className="sidebar-brand">
-          <CityEyeLogo width={36} height={36} />
+    <div className="sidebar-app-layout">
+      {/* FULL LEFT SIDEBAR WITH ALL NAVIGATIONS */}
+      <aside className="main-sidebar">
+        {/* Sidebar Brand Header */}
+        <div className="sidebar-brand-box">
+          <div className="brand-icon"><CityEyeLogo size={36} /></div>
           <div>
-            <div className="brand-name">CITYEYE</div>
-            <div className="brand-sub">Municipal AI Vision</div>
+            <div className="brand-name">CityEye</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-aquamarine)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Municipal AI
+            </div>
           </div>
         </div>
 
-        {/* User profile card */}
-        <div className="sidebar-user">
-          <div className="sidebar-user-avatar">
-            {user?.name?.[0] || 'U'}
+        {/* 1-Click Role Switcher inside Sidebar */}
+        <div className="sidebar-role-selector">
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            Switch Portal Role
           </div>
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{user?.name || 'User'}</div>
-            <div className="sidebar-user-role">{currentNav.title}</div>
-            {user?.team_name && <div className="sidebar-user-team">{user.team_name}</div>}
-          </div>
-        </div>
-
-        {/* Navigation Section */}
-        <nav className="sidebar-nav">
-          <div className="sidebar-section-title">NAVIGATION</div>
-          {currentNav.links.map((link) => {
-            const Icon = link.icon;
-            const isActive = link.end
-              ? location.pathname === link.to
-              : location.pathname.startsWith(link.to);
-            return (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive: active }) =>
-                  `sidebar-link ${active || isActive ? 'active' : ''}`
-                }
-                end={link.end}
-              >
-                <Icon size={18} className="sidebar-link-icon" />
-                <span>{link.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* Switch Role Fast Bar */}
-        <div className="sidebar-role-switcher">
-          <div className="sidebar-section-title">SWITCH ROLE</div>
-          <div className="role-switch-buttons">
+          <div className="segmented-pill-control" style={{ width: '100%', display: 'flex' }}>
             <button
-              className={`role-btn ${user?.role === 'officer' ? 'active' : ''}`}
+              className={`segmented-pill-btn ${user?.role === 'officer' ? 'active' : ''}`}
+              style={{ flex: 1, padding: '6px 0', fontSize: 11 }}
               onClick={() => handleFastSwitch('officer')}
-              title="Review Officer"
             >
               Officer
             </button>
             <button
-              className={`role-btn ${user?.role === 'work_team' ? 'active' : ''}`}
+              className={`segmented-pill-btn ${user?.role === 'work_team' ? 'active' : ''}`}
+              style={{ flex: 1, padding: '6px 0', fontSize: 11 }}
               onClick={() => handleFastSwitch('work_team')}
-              title="Work Team"
             >
               Crew
             </button>
             <button
-              className={`role-btn ${user?.role === 'senior_officer' ? 'active' : ''}`}
+              className={`segmented-pill-btn ${user?.role === 'senior_officer' ? 'active' : ''}`}
+              style={{ flex: 1, padding: '6px 0', fontSize: 11 }}
               onClick={() => handleFastSwitch('senior_officer')}
-              title="Senior Officer"
             >
               Senior
             </button>
           </div>
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="sidebar-footer">
-          <div className="sidebar-footer-actions">
-            <button
-              className="sidebar-action-btn"
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            >
-              {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
-              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-            </button>
+        {/* All Navigation Links Only in Sidebar */}
+        <nav className="sidebar-nav-container">
+          <div className="sidebar-nav-section-title">
+            {currentNav.title} Navigation
+          </div>
 
-            <button
-              className="sidebar-action-btn"
-              onClick={resetData}
-              title="Reset state to initial mock data"
-            >
-              <RotateCcw size={17} />
-              <span>Reset Data</span>
-            </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {currentNav.links.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.end}
+                className={({ isActive }) =>
+                  `sidebar-nav-link${isActive ? ' active' : ''}`
+                }
+              >
+                <div className="nav-link-icon-box">
+                  <link.icon size={18} />
+                </div>
+                <span className="nav-link-text">{link.label}</span>
+                <ChevronRight size={14} className="nav-link-chevron" />
+              </NavLink>
+            ))}
+          </div>
+        </nav>
 
+        {/* Sidebar Footer Controls */}
+        <div className="sidebar-bottom-actions">
+          <button
+            className="sidebar-action-btn"
+            onClick={resetData}
+            title="Reset Mock Demo Data"
+          >
+            <RotateCcw size={15} />
+            <span>Reset Demo Data</span>
+          </button>
+
+          {/* User Info & Logout */}
+          <div className="sidebar-user-card">
+            <div className="user-avatar-circle">{getInitials(user?.name)}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-navy)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.name || 'Officer'}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
+                {formatRole(user?.role)}
+              </div>
+            </div>
             <button
-              className="sidebar-action-btn sidebar-logout-btn"
+              className="icon-btn-circle"
+              style={{ width: 32, height: 32, border: 'none', background: 'transparent' }}
               onClick={handleLogout}
               title="Sign Out"
             >
-              <LogOut size={17} />
-              <span>Sign Out</span>
+              <LogOut size={16} color="var(--color-text-muted)" />
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="main-content">
-        <Outlet />
-      </main>
+      {/* MAIN VIEWPORT WITH TOPBAR (NO DUPLICATE NAVS) */}
+      <div className="main-viewport-wrapper">
+        {/* Top Header Bar (Only Utilities: Title/Breadcrumb, Dark Mode, Notifications) */}
+        <header className="topbar-utility-bar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>Portal</span>
+            <ChevronRight size={14} color="#94A3B8" />
+            <span style={{ fontSize: 13, color: 'var(--color-navy)', fontWeight: 700 }}>
+              {currentNav.title}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* Dark Mode Button */}
+            <button
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? <Sun size={15} color="#FBBF24" /> : <Moon size={15} color="#0B2545" />}
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+
+            <button
+              className="icon-btn-circle"
+              title="Search Reports"
+              onClick={() => navigate(user?.role === 'officer' ? '/officer/reports' : '/senior/reports')}
+            >
+              <Search size={16} />
+            </button>
+
+            <button className="icon-btn-circle" title="Notifications" style={{ position: 'relative' }}>
+              <Bell size={16} />
+              <span style={{ position: 'absolute', top: 9, right: 9, width: 7, height: 7, background: '#DC2626', borderRadius: '50%' }} />
+            </button>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="page-content-area">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
