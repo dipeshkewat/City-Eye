@@ -63,7 +63,7 @@ export default function OfficerDashboard() {
       {/* Welcome Banner */}
       <div className="welcome-banner">
         <div>
-          <h1 className="welcome-title">Welcome Back, Rajesh</h1>
+          <h1 className="welcome-title">Welcome Back, Ruchika</h1>
           <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 2 }}>
             Mumbai Municipal Corporation • Infrastructure Review & Dispatch Portal
           </p>

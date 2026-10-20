@@ -24,7 +24,7 @@ def run_seed():
             users = [
                 User(
                     id="usr-001",
-                    name="Rajesh Sharma",
+                    name="Ruchika",
                     email="officer@cityeye.gov",
                     password_hash=hash_password("officer123"),
                     role=UserRole.officer,
@@ -48,7 +48,7 @@ def run_seed():
                 ),
                 User(
                     id="usr-004",
-                    name="Priya Kulkarni",
+                    name="Dipesh Kewat",
                     email="senior@cityeye.gov",
                     password_hash=hash_password("senior123"),
                     role=UserRole.senior_officer,

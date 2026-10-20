@@ -1,7 +1,20 @@
 ﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { Eye, Mail, Lock, AlertCircle, ShieldCheck, ArrowRight } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import {
+  Mail,
+  Lock,
+  AlertCircle,
+  ShieldCheck,
+  ArrowRight,
+  Sun,
+  Moon,
+  Award,
+  Wrench,
+  ShieldAlert
+} from 'lucide-react';
+import CityEyeLogo from '../components/CityEyeLogo';
 
 const ROLE_ROUTES = {
   officer: '/officer',
@@ -10,9 +23,39 @@ const ROLE_ROUTES = {
 };
 
 const DEMO_ACCOUNTS = [
-  { label: 'Officer Reviewer', email: 'officer@cityeye.gov', password: 'officer123', desc: 'Approve & assign verified complaints' },
-  { label: 'Field Work Team', email: 'vikram@cityeye.gov', password: 'workteam123', desc: 'Manage repair tasks & submit proof' },
-  { label: 'Senior Oversight', email: 'senior@cityeye.gov', password: 'senior123', desc: 'Geospatial map & system analytics' },
+  {
+    roleKey: 'officer',
+    name: 'Ruchika',
+    title: 'Review Officer',
+    email: 'officer@cityeye.gov',
+    password: 'officer123',
+    desc: 'Verify AI detections & dispatch municipal complaints',
+    icon: ShieldCheck,
+    badgeColor: '#10B981',
+    badgeBg: 'rgba(16, 185, 129, 0.15)'
+  },
+  {
+    roleKey: 'senior_officer',
+    name: 'Dipesh Kewat',
+    title: 'Senior Officer (Oversight)',
+    email: 'senior@cityeye.gov',
+    password: 'senior123',
+    desc: 'Geospatial master map, live telemetry & city analytics',
+    icon: Award,
+    badgeColor: '#38BDF8',
+    badgeBg: 'rgba(56, 189, 248, 0.15)'
+  },
+  {
+    roleKey: 'work_team',
+    name: 'Vikram Patil',
+    title: 'Field Operations Crew',
+    email: 'vikram@cityeye.gov',
+    password: 'workteam123',
+    desc: 'Manage work orders & upload on-site repair proofs',
+    icon: Wrench,
+    badgeColor: '#F59E0B',
+    badgeBg: 'rgba(245, 158, 11, 0.15)'
+  },
 ];
 
 export default function LoginPage() {
@@ -20,6 +63,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -29,7 +73,7 @@ export default function LoginPage() {
       const user = await login(email, password);
       navigate(ROLE_ROUTES[user.role] || '/');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Invalid credentials. Please verify your email and password.');
     }
   };
 
@@ -41,46 +85,66 @@ export default function LoginPage() {
       const user = await login(account.email, account.password);
       navigate(ROLE_ROUTES[user.role] || '/');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Authentication error.');
     }
   };
 
   return (
-    <div className="login-container">
+    <div className="login-page-wrapper">
+      {/* Light / Dark Mode Toggle */}
+      <div className="login-theme-toggle">
+        <button
+          className="theme-toggle-btn"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+        >
+          {theme === 'dark' ? <Sun size={15} color="#FBBF24" /> : <Moon size={15} color="#0B2545" />}
+          <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+        </button>
+      </div>
+
       <div className="login-card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <div style={{ width: 44, height: 44, borderRadius: 8, background: '#359B73', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}>
-            <Eye size={24} strokeWidth={2.5} />
+        {/* Brand Header */}
+        <div className="login-brand-header">
+          <div className="brand-icon">
+            <CityEyeLogo size={28} />
           </div>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#F8FAFC', letterSpacing: '-0.02em' }}>CityEye</h1>
-            <div style={{ fontSize: 11, color: '#6EE7B7', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Municipal AI Surveillance
-            </div>
+            <div className="login-brand-name">CityEye</div>
+            <div className="login-brand-sub">Municipal AI Surveillance</div>
           </div>
         </div>
 
-        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 20 }}>
-          Sign in to access your municipal infrastructure monitoring portal
+        <p className="login-desc">
+          Sign in to access your municipal infrastructure monitoring and dispatch portal.
         </p>
 
         {error && (
-          <div style={{ padding: '10px 14px', background: 'var(--color-status-rejected-bg)', border: '1px solid var(--color-status-rejected)', borderRadius: 6, color: '#F87171', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <div style={{
+            padding: '10px 14px',
+            background: 'var(--color-status-rejected-bg)',
+            border: '1px solid var(--color-status-rejected)',
+            borderRadius: 8,
+            color: '#EF4444',
+            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 16
+          }}>
             <AlertCircle size={16} />
-            {error}
+            <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 6 }}>
-              OFFICIAL EMAIL ADDRESS
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={16} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--color-text-muted)' }} />
+        {/* Credentials Form */}
+        <form onSubmit={handleSubmit}>
+          <div className="login-input-group">
+            <label className="login-input-label">Official Email Address</label>
+            <div className="login-input-box">
+              <Mail size={16} className="login-input-icon" />
               <input
-                className="form-control"
-                style={{ paddingLeft: 38 }}
+                className="login-input"
                 type="email"
                 placeholder="officer@cityeye.gov"
                 value={email}
@@ -90,15 +154,12 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 6 }}>
-              PASSWORD
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={16} style={{ position: 'absolute', left: 12, top: 12, color: 'var(--color-text-muted)' }} />
+          <div className="login-input-group">
+            <label className="login-input-label">Password</label>
+            <div className="login-input-box">
+              <Lock size={16} className="login-input-icon" />
               <input
-                className="form-control"
-                style={{ paddingLeft: 38 }}
+                className="login-input"
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -110,46 +171,88 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '10px 16px', marginTop: 4 }}
+            className="login-submit-btn"
             disabled={isLoading}
           >
-            {isLoading ? 'Authenticating...' : 'Sign In to Portal'} <ArrowRight size={16} />
+            {isLoading ? 'Authenticating...' : 'Sign In to Portal'}
+            <ArrowRight size={16} />
           </button>
         </form>
 
-        {/* Quick Demo Access Buttons */}
-        <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid var(--color-border)' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-            Quick Demo Accounts (1-Click Login)
+        {/* 1-Click Fast Demo Login Section */}
+        <div className="login-demo-section">
+          <div className="login-demo-title">
+            <span>Quick Demo Accounts (1-Click Login)</span>
+            <span style={{ fontSize: 10, color: 'var(--color-aquamarine)', fontWeight: 700 }}>Instant Access</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {DEMO_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.email}
-                onClick={() => handleDemoLogin(acc)}
-                type="button"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '10px 12px',
-                  background: 'var(--color-navy-dark)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 6,
-                  color: 'var(--color-text-primary)',
-                  cursor: 'pointer',
-                  textAlign: 'left'
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13, color: '#F8FAFC' }}>{acc.label}</div>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{acc.desc}</div>
-                </div>
-                <span style={{ fontSize: 11, color: '#6EE7B7', fontWeight: 600 }}>Login &rarr;</span>
-              </button>
-            ))}
+
+          <div className="login-demo-grid">
+            {DEMO_ACCOUNTS.map((acc) => {
+              const Icon = acc.icon;
+              return (
+                <button
+                  key={acc.email}
+                  onClick={() => handleDemoLogin(acc)}
+                  type="button"
+                  className="login-demo-card"
+                  title={`Login instantly as ${acc.name} (${acc.title})`}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      background: acc.badgeBg,
+                      color: acc.badgeColor,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      <Icon size={18} />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-navy)' }}>
+                          {acc.name}
+                        </span>
+                        <span style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: acc.badgeColor,
+                          background: acc.badgeBg,
+                          padding: '1px 6px',
+                          borderRadius: 4
+                        }}>
+                          {acc.title}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 2 }}>
+                        {acc.desc}
+                      </div>
+                    </div>
+                  </div>
+
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: 'var(--color-aquamarine)',
+                    whiteSpace: 'nowrap',
+                    marginLeft: 8
+                  }}>
+                    Login →
+                  </span>
+                </button>
+              );
+            })}
           </div>
+        </div>
+
+        {/* Security Stamp */}
+        <div className="login-footer-stamp">
+          <ShieldAlert size={12} color="var(--color-aquamarine)" />
+          <span>Secured Municipal Infrastructure Intelligence • BMC AI Portal</span>
         </div>
       </div>
     </div>

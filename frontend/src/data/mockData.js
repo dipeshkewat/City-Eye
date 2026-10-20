@@ -4,7 +4,7 @@
 export const MOCK_USERS = {
   officer: {
     id: 'usr-001',
-    name: 'Rajesh Sharma',
+    name: 'Ruchika',
     email: 'officer@cityeye.gov',
     role: 'officer',
     team_name: null,
@@ -28,7 +28,7 @@ export const MOCK_USERS = {
   },
   senior_officer: {
     id: 'usr-004',
-    name: 'Priya Kulkarni',
+    name: 'Dipesh Kewat',
     email: 'senior@cityeye.gov',
     role: 'senior_officer',
     team_name: null,
@@ -503,7 +503,7 @@ export const MOCK_ACTIVITY = [
   {
     id: 'act-003',
     type: 'approved',
-    text: '<strong>Rajesh Sharma</strong> approved waterlogging report for Dadar TT Circle',
+    text: '<strong>Ruchika</strong> approved waterlogging report for Dadar TT Circle',
     time: '2 hours ago',
     color: 'green',
   },
@@ -531,7 +531,7 @@ export const MOCK_ACTIVITY = [
   {
     id: 'act-007',
     type: 'rejected',
-    text: '<strong>Rajesh Sharma</strong> rejected false positive — vehicle shadow on MG Road',
+    text: '<strong>Ruchika</strong> rejected false positive — vehicle shadow on MG Road',
     time: '1 day ago',
     color: 'red',
   },
