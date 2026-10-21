@@ -1,34 +1,44 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, EmailStr, computed_field
 from app.models.models import UserRole, ReportStatus
 
 
-# -- Auth --
+# ─────────────────────────────────────────
+# Auth
+# ─────────────────────────────────────────
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    user: "UserOut"
 
 class UserOut(BaseModel):
     id: str
     name: str
     email: str
     role: UserRole
+    team_name: Optional[str] = None
     model_config = {"from_attributes": True}
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: "UserOut"
+
 
 TokenResponse.model_rebuild()
 
 
-# -- Camera --
+# ─────────────────────────────────────────
+# Camera
+# ─────────────────────────────────────────
 class CameraCreate(BaseModel):
     name: str
     address: str
     latitude: float
     longitude: float
+
 
 class CameraOut(BaseModel):
     id: str
@@ -41,7 +51,9 @@ class CameraOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# -- Detection sub-schema --
+# ─────────────────────────────────────────
+# Detection sub-schema (embedded in ReportOut)
+# ─────────────────────────────────────────
 class DetectionOut(BaseModel):
     camera_id: str
     problem_type: str
@@ -49,10 +61,27 @@ class DetectionOut(BaseModel):
     severity_score: float
     confidence: float
     confirmed_frame_count: int
-    evidence_image_path: str | None
+    evidence_image_path: Optional[str] = None
 
 
-# -- Report --
+# ─────────────────────────────────────────
+# Report
+# ─────────────────────────────────────────
+class ReportCreate(BaseModel):
+    """Used by the ML pipeline to ingest a confirmed detection."""
+    camera_id: str
+    title: str
+    description: str
+    citizen_summary: str
+    recommended_department: str
+    problem_type: str
+    severity_label: str
+    severity_score: float
+    confidence: float
+    confirmed_frame_count: int
+    evidence_image_path: Optional[str] = None
+
+
 class ReportOut(BaseModel):
     id: str
     camera_id: str
@@ -65,18 +94,18 @@ class ReportOut(BaseModel):
     severity_score: float
     confidence: float
     confirmed_frame_count: int
-    evidence_image_path: str | None
+    evidence_image_path: Optional[str] = None
     status: ReportStatus
-    reviewed_by: str | None
-    reviewed_at: datetime | None
-    rejection_reason: str | None
-    assigned_team: str | None
-    assigned_at: datetime | None
-    in_progress_at: datetime | None
-    resolution_photo_path: str | None
-    resolution_notes: str | None
-    resolved_by: str | None
-    resolved_at: datetime | None
+    reviewed_by: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+    rejection_reason: Optional[str] = None
+    assigned_team: Optional[str] = None
+    assigned_at: Optional[datetime] = None
+    in_progress_at: Optional[datetime] = None
+    resolution_photo_path: Optional[str] = None
+    resolution_notes: Optional[str] = None
+    resolved_by: Optional[str] = None
+    resolved_at: Optional[datetime] = None
     created_at: datetime
     camera: CameraOut
     model_config = {"from_attributes": True}
@@ -95,23 +124,30 @@ class ReportOut(BaseModel):
         )
 
 
-# -- Workflow payloads --
+# ─────────────────────────────────────────
+# Workflow payloads
+# ─────────────────────────────────────────
 class ReviewPayload(BaseModel):
-    decision: str
-    rejection_reason: str | None = None
+    decision: str  # "approved" | "rejected"
+    rejection_reason: Optional[str] = None
+
 
 class AssignPayload(BaseModel):
-    assigned_team: str
+    assigned_team: str  # user id of work_team member
+
 
 class ResolvePayload(BaseModel):
     resolution_notes: str
 
 
-# -- Stats --
+# ─────────────────────────────────────────
+# Stats
+# ─────────────────────────────────────────
 class DashboardStats(BaseModel):
     total: int
     pending: int
     approved: int
+    assigned: int
     in_progress: int
     resolved: int
     rejected: int

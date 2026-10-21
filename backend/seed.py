@@ -36,6 +36,7 @@ def run_seed():
                     email="vikram@cityeye.gov",
                     password_hash=hash_password("workteam123"),
                     role=UserRole.work_team,
+                    team_name="Road Maintenance Crew 1",
                     is_active=True,
                 ),
                 User(
@@ -44,6 +45,7 @@ def run_seed():
                     email="sunil@cityeye.gov",
                     password_hash=hash_password("workteam123"),
                     role=UserRole.work_team,
+                    team_name="Drainage & Sanitation Crew",
                     is_active=True,
                 ),
                 User(

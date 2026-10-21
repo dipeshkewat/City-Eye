@@ -1,4 +1,4 @@
-﻿# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -30,6 +30,9 @@ runs/
 # Internal documents
 *.docx
 *.pdf
+CityEye_Technical_Architecture_Spec.md
+CityEye_Security_Design.md
+CityEye_Production_PRD_v2.docx
 
 # Uploads & Media
 backend/uploads/evidence/*.jpg

@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timezone
+from datetime import datetime, timezone
 from sqlalchemy import String, Boolean, Float, Integer, ForeignKey, Text, Enum as SAEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
@@ -29,11 +29,13 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[UserRole] = mapped_column(SAEnum(UserRole))
+    team_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
 
     reviewed_reports: Mapped[list["Report"]] = relationship("Report", foreign_keys="Report.reviewed_by", back_populates="reviewer")
     assigned_reports: Mapped[list["Report"]] = relationship("Report", foreign_keys="Report.assigned_team", back_populates="assigned_crew")
+    resolved_reports: Mapped[list["Report"]] = relationship("Report", foreign_keys="Report.resolved_by", back_populates="resolver")
 
 
 class Camera(Base):
@@ -54,7 +56,7 @@ class Report(Base):
     __tablename__ = "reports"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    camera_id: Mapped[str] = mapped_column(String, ForeignKey("cameras.id"))
+    camera_id: Mapped[str] = mapped_column(String, ForeignKey("cameras.id"), index=True)
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
     citizen_summary: Mapped[str] = mapped_column(Text)
@@ -85,3 +87,4 @@ class Report(Base):
     camera: Mapped["Camera"] = relationship("Camera", back_populates="reports")
     reviewer: Mapped["User | None"] = relationship("User", foreign_keys=[reviewed_by], back_populates="reviewed_reports")
     assigned_crew: Mapped["User | None"] = relationship("User", foreign_keys=[assigned_team], back_populates="assigned_reports")
+    resolver: Mapped["User | None"] = relationship("User", foreign_keys=[resolved_by], back_populates="resolved_reports")
