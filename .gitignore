@@ -44,3 +44,4 @@ backend/uploads/resolution/*.jpg
 *.swo
 .DS_Store
 Thumbs.db
+.neon
