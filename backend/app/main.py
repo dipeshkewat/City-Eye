@@ -9,10 +9,6 @@ from app.api.routes import auth, reports, cameras, stats
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    try:
-        Base.metadata.create_all(bind=engine)
-    except Exception as e:
-        print(f"Startup DB check warning: {e}")
     os.makedirs('uploads/evidence', exist_ok=True)
     os.makedirs('uploads/resolution', exist_ok=True)
     yield

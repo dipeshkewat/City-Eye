@@ -2,7 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from app.core.config import settings
 
+import re
+
 db_url = settings.DATABASE_URL
+if "channel_binding=" in db_url:
+    db_url = re.sub(r'[?&]channel_binding=[^&]+', '', db_url)
+    if '?' not in db_url and '&' in db_url:
+        db_url = db_url.replace('&', '?', 1)
+
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
 elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
