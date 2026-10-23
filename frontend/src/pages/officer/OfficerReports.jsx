@@ -1,14 +1,16 @@
-﻿import { useState, useMemo } from 'react';
-import { Search, Filter, Eye, Download, CheckCircle2, AlertTriangle, ArrowUpRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Search, Filter, Eye, Download, CheckCircle2, AlertTriangle, ArrowUpRight, UploadCloud } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import EvidenceModal from '../../components/EvidenceModal';
+import UploadProblemModal from '../../components/UploadProblemModal';
 
 export default function OfficerReports() {
-  const { reports } = useReports();
+  const { reports, addUploadedReport } = useReports();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [selectedReport, setSelectedReport] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const filteredReports = useMemo(() => {
     return reports.filter((r) => {
@@ -44,9 +46,27 @@ export default function OfficerReports() {
             Complete audit trail of all AI-detected and verified civic issues
           </p>
         </div>
-        <button className="btn-pill-primary" onClick={exportCSV}>
-          <Download size={15} /> Export CSV
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            className="btn-pill-primary"
+            style={{
+              background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+              border: 'none',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              fontWeight: 700,
+            }}
+            onClick={() => setShowUploadModal(true)}
+          >
+            <UploadCloud size={16} /> Upload Problem
+          </button>
+          <button className="btn-secondary" onClick={exportCSV} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Download size={15} /> Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Filter Row */}
@@ -199,6 +219,14 @@ export default function OfficerReports() {
           report={selectedReport}
           userRole="officer"
           onClose={() => setSelectedReport(null)}
+        />
+      )}
+
+      {showUploadModal && (
+        <UploadProblemModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onProblemDetected={(newRep) => addUploadedReport(newRep)}
         />
       )}
     </div>

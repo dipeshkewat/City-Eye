@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { MOCK_REPORTS, MOCK_CAMERAS, MOCK_USERS } from '../data/mockData';
 import {
   apiGetReports,
@@ -193,6 +193,19 @@ export function ReportsProvider({ children }) {
     }
   };
 
+  const addUploadedReport = (newReport) => {
+    const formatted = {
+      ...newReport,
+      location_name: newReport.location_name || (newReport.camera ? newReport.camera.address || newReport.camera.name : 'SV Road Demonstration Point'),
+      gps: {
+        lat: newReport.camera ? newReport.camera.latitude : 19.0596,
+        lng: newReport.camera ? newReport.camera.longitude : 72.8295,
+      },
+      evidence_photo: newReport.evidence_image_path || '/evidence/pothole-001.svg',
+    };
+    setReports((prev) => [formatted, ...prev.filter((r) => r.id !== formatted.id)]);
+  };
+
   const resetData = () => {
     setReports(MOCK_REPORTS);
     setCameras(MOCK_CAMERAS);
@@ -212,6 +225,7 @@ export function ReportsProvider({ children }) {
         startWork,
         resolveReport,
         addCamera,
+        addUploadedReport,
         resetData,
       }}
     >

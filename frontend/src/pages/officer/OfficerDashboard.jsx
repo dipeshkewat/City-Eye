@@ -2,21 +2,24 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Clock, CheckCircle2, AlertTriangle, FileText, Eye, Users,
-  XCircle, ArrowUpRight, Plus, Calendar, ChevronDown, Wrench, Shield
+  XCircle, ArrowUpRight, Plus, Calendar, ChevronDown, Wrench, Shield,
+  UploadCloud
 } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import { useTheme } from '../../context/ThemeContext';
 import EvidenceModal from '../../components/EvidenceModal';
 import RejectModal from '../../components/RejectModal';
 import AssignModal from '../../components/AssignModal';
+import UploadProblemModal from '../../components/UploadProblemModal';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip, Cell, LineChart, Line } from 'recharts';
 
 export default function OfficerDashboard() {
-  const { reports, cameras, approveReport, rejectReport, assignReport } = useReports();
+  const { reports, cameras, approveReport, rejectReport, assignReport, addUploadedReport } = useReports();
   const navigate = useNavigate();
   const [selectedReport, setSelectedReport] = useState(null);
   const [rejectId, setRejectId] = useState(null);
   const [assignId, setAssignId] = useState(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [chartView, setChartView] = useState('monthly');
   const { theme } = useTheme();
 
@@ -57,6 +60,23 @@ export default function OfficerDashboard() {
             <Calendar size={15} color="#359B73" />
             <span>29 Jun, 2026 - 29 Aug, 2026</span>
             <ChevronDown size={14} color="#94A3B8" />
+          </button>
+
+          <button
+            className="btn-pill-primary"
+            style={{
+              background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+              border: 'none',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              fontWeight: 700,
+            }}
+            onClick={() => setShowUploadModal(true)}
+          >
+            <UploadCloud size={16} /> Upload Problem
           </button>
 
           <button className="btn-pill-primary" onClick={() => navigate('/officer/cameras')}>
@@ -556,6 +576,14 @@ export default function OfficerDashboard() {
           reportId={assignId}
           onClose={() => setAssignId(null)}
           onConfirm={(id, teamId) => assignReport(id, teamId)}
+        />
+      )}
+
+      {showUploadModal && (
+        <UploadProblemModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onProblemDetected={(newRep) => addUploadedReport(newRep)}
         />
       )}
     </div>

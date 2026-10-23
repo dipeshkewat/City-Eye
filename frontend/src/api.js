@@ -116,3 +116,29 @@ export async function apiAddCamera(data) {
   }
   return res.json();
 }
+
+export async function apiUploadProblem(file, cameraId, locationName) {
+  const formData = new FormData();
+  formData.append("file", file);
+  if (cameraId) formData.append("camera_id", cameraId);
+  if (locationName) formData.append("location_name", locationName);
+
+  const token = localStorage.getItem("cityeye_token");
+  const headers = {};
+  if (token && !token.startsWith("mock-")) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}/reports/upload-problem`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to analyze and detect problem");
+  }
+  return res.json();
+}
+
