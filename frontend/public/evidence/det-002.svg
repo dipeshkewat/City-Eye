@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="waterbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#164e63"/>
+    </linearGradient>
+    <radialGradient id="water-pool" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="70%" stop-color="#0e7490"/>
+      <stop offset="100%" stop-color="#155e75"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#waterbg)"/>
+  <ellipse cx="410" cy="280" rx="200" ry="70" fill="url(#water-pool)" opacity="0.85" stroke="#06b6d4" stroke-width="2"/>
+  <rect x="180" y="200" width="460" height="150" fill="none" stroke="#06b6d4" stroke-width="3"/>
+  <rect x="180" y="167" width="210" height="28" rx="6" fill="#0891b2"/>
+  <text x="190" y="186" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">WATERLOGGING 91.5%</text>
+  <rect x="15" y="15" width="770" height="36" rx="6" fill="#090d16" opacity="0.85"/>
+  <text x="50" y="38" font-family="monospace" font-size="13" font-weight="bold" fill="#38bdf8">CCTV • FEED</text>
+  <text x="160" y="38" font-family="monospace" font-size="13" fill="#94a3b8">CAM-002 [ANDHERI STATION ROAD]</text>
+  <rect x="15" y="405" width="770" height="30" rx="4" fill="#090d16" opacity="0.85"/>
+  <text x="30" y="425" font-family="monospace" font-size="11" fill="#64748b">CITYEYE SURVEILLANCE • DEPTH HAZARD &gt;15CM • ROUTE: STORMWATER DEPT</text>
+</svg>

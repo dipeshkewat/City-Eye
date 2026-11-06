@@ -1,7 +1,8 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { resolveMediaUrl } from '../api';
 
 // Fix leaflet default marker icons in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -319,12 +320,8 @@ export default function StatusMap({ reports = [], cameras = [] }) {
             const severity = report.detection?.severity_label || report.severity_label || 'medium';
             const radius = severity === 'high' ? 14 : severity === 'medium' ? 11 : 8;
 
-            const evidenceImg =
-              report.evidence_image_path?.startsWith('http')
-                ? report.evidence_image_path
-                : report.evidence_image_path
-                ? `http://127.0.0.1:8000${report.evidence_image_path}`
-                : report.evidence_photo || null;
+            const rawEvidence = report.evidence_image_path || report.evidence_photo || report.detection?.evidence_image_path;
+            const evidenceImg = rawEvidence ? resolveMediaUrl(rawEvidence) : null;
 
             return (
               <CircleMarker

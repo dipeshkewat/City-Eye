@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Eye, CheckCircle2, XCircle, Users, AlertTriangle, ShieldCheck, Camera, MapPin, Cpu, FileText } from 'lucide-react';
 import FullReportModal from './FullReportModal';
+import { resolveMediaUrl } from '../api';
 
 export default function EvidenceModal({ report, onClose, onApprove, onReject, onAssign, userRole }) {
   const [showBbox, setShowBbox] = useState(true);
@@ -31,7 +32,7 @@ export default function EvidenceModal({ report, onClose, onApprove, onReject, on
             {/* CCTV Frame */}
             <div style={{ position: 'relative', width: '100%', height: 360, background: '#0B2545', borderRadius: 20, overflow: 'hidden', marginBottom: 20 }}>
               <img
-                src={det.evidence_image_path || '/evidence/det-001.svg'}
+                src={resolveMediaUrl(det.evidence_image_path || report.evidence_image_path) || '/evidence/det-001.svg'}
                 alt="CCTV Evidence Frame"
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 onError={(e) => {

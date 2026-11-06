@@ -11,6 +11,7 @@ import EvidenceModal from '../../components/EvidenceModal';
 import RejectModal from '../../components/RejectModal';
 import AssignModal from '../../components/AssignModal';
 import UploadProblemModal from '../../components/UploadProblemModal';
+import { resolveMediaUrl } from '../../api';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip, Cell, LineChart, Line } from 'recharts';
 
 export default function OfficerDashboard() {
@@ -422,7 +423,7 @@ export default function OfficerDashboard() {
                       title="Click to view evidence frame"
                     >
                       <img
-                        src={report.detection.evidence_image_path || '/evidence/det-001.svg'}
+                        src={resolveMediaUrl(report.detection?.evidence_image_path || report.evidence_image_path || report.evidence_photo) || '/evidence/det-001.svg'}
                         alt="CCTV"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => { e.target.src = '/evidence/det-001.svg'; }}

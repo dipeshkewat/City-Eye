@@ -1,6 +1,22 @@
-const API_BASE = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, '')}/api/v1`
-  : "http://127.0.0.1:8000/api/v1";
+export const API_SERVER_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace(/\/+$/, '')
+  : "http://127.0.0.1:8000";
+
+export const API_BASE = `${API_SERVER_URL}/api/v1`;
+
+export function resolveMediaUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+  // Local frontend assets in public/ (e.g. /evidence/det-001.svg)
+  if (path.startsWith('/evidence/') && !path.startsWith('/uploads/')) {
+    return path;
+  }
+  // Backend uploads (e.g. /uploads/evidence/...)
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_SERVER_URL}${cleanPath}`;
+}
 
 
 function getHeaders() {

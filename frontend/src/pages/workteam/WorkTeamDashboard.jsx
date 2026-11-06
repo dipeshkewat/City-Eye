@@ -1,9 +1,10 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Wrench, CheckCircle2, Clock, AlertTriangle, Eye, ArrowUpRight } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import { useAuth } from '../../auth/AuthContext';
 import ResolveModal from '../../components/ResolveModal';
 import EvidenceModal from '../../components/EvidenceModal';
+import { resolveMediaUrl } from '../../api';
 
 export default function WorkTeamDashboard() {
   const { reports, startWork, resolveReport } = useReports();
@@ -123,7 +124,7 @@ export default function WorkTeamDashboard() {
                       }}
                     >
                       <img
-                        src={report.detection.evidence_image_path || '/evidence/det-001.svg'}
+                        src={resolveMediaUrl(report.detection?.evidence_image_path || report.evidence_image_path || report.evidence_photo) || '/evidence/det-001.svg'}
                         alt="CCTV"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => { e.target.src = '/evidence/det-001.svg'; }}

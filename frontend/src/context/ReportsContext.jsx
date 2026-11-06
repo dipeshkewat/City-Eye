@@ -40,7 +40,7 @@ export function ReportsProvider({ children }) {
               lat: r.gps_lat || (r.camera ? r.camera.latitude : 19.076),
               lng: r.gps_lng || (r.camera ? r.camera.longitude : 72.8777),
             },
-            evidence_photo: r.evidence_photo_path || '/evidence/pothole-001.svg',
+            evidence_photo: r.evidence_image_path || r.detection?.evidence_image_path || r.evidence_photo_path || '/evidence/pothole-001.svg',
           }));
           setReports(formatted);
         }

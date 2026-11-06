@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="resbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#resbg)"/>
+  <!-- Smooth fresh asphalt patch -->
+  <ellipse cx="400" cy="270" rx="140" ry="50" fill="#111827" stroke="#22c55e" stroke-width="2"/>
+  <!-- Verified Stamp Badge -->
+  <rect x="250" y="160" width="300" height="90" rx="12" fill="#052e16" stroke="#22c55e" stroke-width="3" opacity="0.95"/>
+  <text x="275" y="200" font-family="monospace" font-size="20" font-weight="bold" fill="#4ade80">✓ REPAIR COMPLETED</text>
+  <text x="275" y="228" font-family="monospace" font-size="12" fill="#86efac">FIELD WORK TEAM INSPECTION VERIFIED</text>
+
+  <rect x="15" y="15" width="770" height="36" rx="6" fill="#090d16" opacity="0.85"/>
+  <text x="40" y="38" font-family="monospace" font-size="13" font-weight="bold" fill="#4ade80">STATUS • RESOLVED</text>
+  <text x="200" y="38" font-family="monospace" font-size="13" fill="#94a3b8">CREW: PWD SQUAD 4 • ASPHALT OVERLAY APPLIED</text>
+
+  <rect x="15" y="405" width="770" height="30" rx="4" fill="#090d16" opacity="0.85"/>
+  <text x="30" y="425" font-family="monospace" font-size="11" fill="#64748b">CITYEYE RESOLUTION PROOF • CITIZEN NOTIFIED • TICKET CLOSED</text>
+</svg>

@@ -3,7 +3,7 @@ import {
   UploadCloud, X, CheckCircle2, AlertTriangle, Sparkles, FileText,
   MapPin, ShieldCheck, ArrowRight, RefreshCw, Eye, Film, Image as ImageIcon
 } from 'lucide-react';
-import { apiUploadProblem } from '../api';
+import { apiUploadProblem, resolveMediaUrl } from '../api';
 import FullReportModal from './FullReportModal';
 
 export default function UploadProblemModal({ isOpen, onClose, onProblemDetected }) {
@@ -383,7 +383,7 @@ export default function UploadProblemModal({ isOpen, onClose, onProblemDetected 
                   }}
                 >
                   <img
-                    src={detectedReport.evidence_image_path || previewUrl}
+                    src={resolveMediaUrl(detectedReport.evidence_image_path) || previewUrl}
                     alt="AI Annotated Defect"
                     style={{ maxHeight: 280, maxWidth: '100%', objectFit: 'contain', borderRadius: 8 }}
                   />

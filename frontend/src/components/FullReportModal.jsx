@@ -3,6 +3,7 @@ import {
   FileText, Download, X, Camera, MapPin, Shield, AlertTriangle,
   Clock, Cpu, CheckCircle2, Building2, Activity
 } from 'lucide-react';
+import { resolveMediaUrl } from '../api';
 
 export default function FullReportModal({ report, onClose }) {
   const reportRef = useRef(null);
@@ -142,7 +143,7 @@ export default function FullReportModal({ report, onClose }) {
   <div class="section">
     <div class="section-title">CCTV Evidence Frame</div>
     <div class="evidence-frame">
-      <img src="${det.evidence_image_path || '/evidence/det-001.svg'}" alt="CCTV Evidence" />
+      <img src="${resolveMediaUrl(det.evidence_image_path || report.evidence_image_path) || '/evidence/det-001.svg'}" alt="CCTV Evidence" />
     </div>
   </div>
 
@@ -295,7 +296,7 @@ export default function FullReportModal({ report, onClose }) {
             background: '#0B2545', borderRadius: 18, overflow: 'hidden', marginBottom: 20
           }}>
             <img
-              src={det.evidence_image_path || '/evidence/det-001.svg'}
+              src={resolveMediaUrl(det.evidence_image_path || report.evidence_image_path) || '/evidence/det-001.svg'}
               alt="CCTV Evidence Frame"
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               onError={(e) => { e.target.onerror = null; e.target.src = '/evidence/det-001.svg'; }}

@@ -131,7 +131,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.87,
       severity_label: 'high',
       confirmed_frame_count: 8,
-      evidence_image_path: '/evidence/det-001.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'MG Road Junction Cam',
@@ -167,7 +167,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.72,
       severity_label: 'medium',
       confirmed_frame_count: 12,
-      evidence_image_path: '/evidence/det-002.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Andheri Station Cam',
@@ -203,7 +203,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.65,
       severity_label: 'medium',
       confirmed_frame_count: 6,
-      evidence_image_path: '/evidence/det-003.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Dadar TT Circle Cam',
@@ -239,7 +239,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.91,
       severity_label: 'high',
       confirmed_frame_count: 10,
-      evidence_image_path: '/evidence/det-004.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Bandra Linking Road Cam',
@@ -275,7 +275,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.58,
       severity_label: 'medium',
       confirmed_frame_count: 7,
-      evidence_image_path: '/evidence/det-005.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Worli Sea Face Cam',
@@ -299,7 +299,7 @@ export const MOCK_REPORTS = [
     assigned_team: 'usr-002',
     assigned_at: '2026-09-28T08:30:00Z',
     in_progress_at: '2026-09-28T10:00:00Z',
-    resolution_photo_path: '/evidence/res-006.jpg',
+    resolution_photo_path: '/evidence/res-.svg',
     resolution_notes: 'Drainage blockage cleared. Pumps deployed to remove standing water. Road passable again by 14:00. Recommended permanent drainage upgrade for this underpass.',
     resolved_by: 'usr-002',
     resolved_at: '2026-09-28T14:30:00Z',
@@ -311,7 +311,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.82,
       severity_label: 'high',
       confirmed_frame_count: 9,
-      evidence_image_path: '/evidence/det-006.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Powai Lake Cam',
@@ -335,7 +335,7 @@ export const MOCK_REPORTS = [
     assigned_team: 'usr-002',
     assigned_at: '2026-09-27T10:30:00Z',
     in_progress_at: '2026-09-27T13:00:00Z',
-    resolution_photo_path: '/evidence/res-007.jpg',
+    resolution_photo_path: '/evidence/res-.svg',
     resolution_notes: 'Pothole filled with cold mix asphalt. Surface leveled and compacted. Area barricaded for 4 hours to allow setting.',
     resolved_by: 'usr-002',
     resolved_at: '2026-09-27T17:00:00Z',
@@ -347,7 +347,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.55,
       severity_label: 'medium',
       confirmed_frame_count: 6,
-      evidence_image_path: '/evidence/det-007.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Colaba Causeway Cam',
@@ -383,7 +383,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.35,
       severity_label: 'low',
       confirmed_frame_count: 5,
-      evidence_image_path: '/evidence/det-008.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'MG Road Junction Cam',
@@ -419,7 +419,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.68,
       severity_label: 'medium',
       confirmed_frame_count: 11,
-      evidence_image_path: '/evidence/det-009.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Juhu Beach Road Cam',
@@ -455,7 +455,7 @@ export const MOCK_REPORTS = [
       severity_score: 0.95,
       severity_label: 'high',
       confirmed_frame_count: 15,
-      evidence_image_path: '/evidence/det-010.jpg',
+      evidence_image_path: '/evidence/det-.svg',
     },
     camera: {
       name: 'Andheri Station Cam',

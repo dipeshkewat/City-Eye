@@ -1,4 +1,4 @@
-﻿# 🏙️ CityEye — AI-Powered Municipal Infrastructure Monitoring System
+# 🏙️ CityEye — AI-Powered Municipal Infrastructure Monitoring System
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/Frontend-React_19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
@@ -197,7 +197,38 @@ python ml/inference/detect.py --simulate --type pothole
 
 ---
 
-## 🔐 Default Demo Accounts
+## 🚀 Quick Launch for Demonstrations
+
+### 1-Click Presentation Launcher (Windows)
+Double-click `start-demo.bat` or run:
+```powershell
+.\start-demo.ps1
+```
+This automatically starts both the FastAPI backend and React frontend, runs database verification, and opens `http://localhost:5173/login` in your default browser.
+
+---
+
+## 🌐 Production & Cloud Deployment
+
+### A. Deploy on Render (Recommended)
+1. Push your repository to GitHub.
+2. In Render, create a **New Blueprint Instance** and point to your repository.
+3. Render automatically reads `render.yaml` and provisions:
+   - **`cityeye-api`**: FastAPI Web Service with automated database table creation.
+   - **`cityeye-frontend`**: Vite React Static Site with SPA routing.
+
+### B. Deploy Frontend on Vercel
+1. Import `frontend/` directory in Vercel.
+2. Set Environment Variable: `VITE_API_URL=https://your-backend-api-url.onrender.com`.
+3. Deploy! Routing is configured via `vercel.json`.
+
+### C. Run with Docker Compose
+```bash
+docker compose up --build
+```
+Spins up PostgreSQL, builds backend and frontend, and serves the complete system on `http://localhost:10000`.
+
+---
 
 | Role | Email | Password | Permissions |
 |---|---|---|---|

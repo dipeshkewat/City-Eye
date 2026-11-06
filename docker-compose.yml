@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  cityeye-db:
+    image: postgres:15-alpine
+    container_name: cityeye-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: cityeye_user
+      POSTGRES_PASSWORD: cityeye_password
+      POSTGRES_DB: cityeye
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cityeye_user -d cityeye"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cityeye-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cityeye-api
+    restart: always
+    depends_on:
+      cityeye-db:
+        condition: service_healthy
+    ports:
+      - "10000:10000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://cityeye_user:cityeye_password@cityeye-db:5432/cityeye
+      SECRET_KEY: cityeye-super-secure-production-key-2026
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 480
+      PORT: 10000
+      CORS_ORIGINS: "*"
+    volumes:
+      - uploads_data:/app/backend/uploads
+
+volumes:
+  pgdata:
+  uploads_data:
+

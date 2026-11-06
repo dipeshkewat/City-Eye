@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#064e3b"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#gbg)"/>
+  <!-- Garbage Mound Silhouette -->
+  <path d="M 220 340 Q 320 220 440 230 Q 520 240 580 340 Z" fill="#065f46" stroke="#10b981" stroke-width="2"/>
+  <rect x="200" y="210" width="400" height="145" fill="none" stroke="#10b981" stroke-width="3"/>
+  <rect x="200" y="177" width="200" height="28" rx="6" fill="#059669"/>
+  <text x="210" y="196" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">GARBAGE DUMP 88.0%</text>
+  <rect x="15" y="15" width="770" height="36" rx="6" fill="#090d16" opacity="0.85"/>
+  <text x="50" y="38" font-family="monospace" font-size="13" font-weight="bold" fill="#34d399">CCTV • ACTIVE</text>
+  <text x="170" y="38" font-family="monospace" font-size="13" fill="#94a3b8">CAM-003 [DADAR MARKET PERIMETER]</text>
+  <rect x="15" y="405" width="770" height="30" rx="4" fill="#090d16" opacity="0.85"/>
+  <text x="30" y="425" font-family="monospace" font-size="11" fill="#64748b">CITYEYE SURVEILLANCE • SOLID WASTE DEPT • SANITATION PRIORITY</text>
+</svg>
