@@ -19,7 +19,7 @@ except Exception:
 import uvicorn
 
 if __name__ == "__main__":
-    port_env = os.environ.get("PORT", "10000")
+    port_env = os.environ.get("PORT", "8000")
     try:
         port = int(port_env)
     except ValueError:

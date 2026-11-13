@@ -37,18 +37,23 @@ app = FastAPI(
 # CORS configuration: allow all for development, configurable via CORS_ORIGINS
 cors_origins_env = os.environ.get("CORS_ORIGINS", "*")
 if cors_origins_env == "*":
-    origins = ["*"]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[],
+        allow_origin_regex=r".*",
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
+    )
 else:
     origins = [orig.strip() for orig in cors_origins_env.split(",") if orig.strip()]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins if origins != ["*"] else None,
-    allow_origin_regex=r".*" if origins == ["*"] else None,
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*'],
+    )
 
 os.makedirs('uploads', exist_ok=True)
 app.mount('/uploads', StaticFiles(directory='uploads'), name='uploads')
