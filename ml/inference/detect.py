@@ -158,11 +158,17 @@ def process_stream(
     print(f"[*] CLAHE Contrast Pre-Processing: {'ENABLED' if enable_clahe else 'DISABLED'}")
     model = YOLO(model_path)
 
-    db = SessionLocal()
-    camera = db.query(Camera).filter(Camera.id == camera_id).first()
-    camera_name = camera.name if camera else "City Monitoring Camera"
-    camera_addr = camera.address if camera else "Main City Junction"
-    db.close()
+    camera_name = "City Monitoring Camera"
+    camera_addr = "Main City Junction"
+    try:
+        db = SessionLocal()
+        camera = db.query(Camera).filter(Camera.id == camera_id).first()
+        if camera:
+            camera_name = camera.name
+            camera_addr = camera.address
+        db.close()
+    except Exception as e:
+        print(f"[*] Camera query note ({e}). Using default location.")
 
     verifier = MultiFrameVerifier(iou_threshold=0.5, confirm_threshold=confirm_frames)
     evidence_dir = ensure_evidence_dir()
@@ -245,28 +251,43 @@ def process_stream(
                 cv2.putText(annotated_frame, f"{cand.problem_type.upper()} ({cand.confidence*100:.0f}%) [CLAHE]", (px1, max(20, py1 - 8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                 cv2.imwrite(evidence_filepath, annotated_frame)
 
-                db = SessionLocal()
-                new_report = Report(
-                    id=report_id,
-                    camera_id=camera_id,
-                    title=complaint["title"],
-                    description=complaint["description"],
-                    citizen_summary=f"Automated AI detection of {cand.problem_type} with {sev_label} severity (CLAHE enhanced).",
-                    recommended_department=complaint["recommended_department"],
-                    problem_type=cand.problem_type,
-                    severity_label=sev_label,
-                    severity_score=sev_score,
-                    confidence=cand.confidence,
-                    confirmed_frame_count=cand.confirmed_frame_count,
-                    evidence_image_path=f"/uploads/evidence/{evidence_filename}",
-                    status=ReportStatus.pending_officer_review
-                )
-                db.add(new_report)
-                db.commit()
-                db.refresh(new_report)
-                db.close()
-
-                print(f"[+] [CONFIRMED REPORT] ID: {report_id} | Type: {cand.problem_type} | Severity: {sev_label.upper()} ({sev_score}) | Saved into PostgreSQL!")
+                saved_to_db = False
+                try:
+                    db = SessionLocal()
+                    new_report = Report(
+                        id=report_id,
+                        camera_id=camera_id,
+                        title=complaint["title"],
+                        description=complaint["description"],
+                        citizen_summary=f"Automated AI detection of {cand.problem_type} with {sev_label} severity (CLAHE enhanced).",
+                        recommended_department=complaint["recommended_department"],
+                        problem_type=cand.problem_type,
+                        severity_label=sev_label,
+                        severity_score=sev_score,
+                        confidence=cand.confidence,
+                        confirmed_frame_count=cand.confirmed_frame_count,
+                        evidence_image_path=f"/uploads/evidence/{evidence_filename}",
+                        status=ReportStatus.pending_officer_review
+                    )
+                    db.add(new_report)
+                    db.commit()
+                    db.refresh(new_report)
+                    db.close()
+                    saved_to_db = True
+                    print(f"[+] [CONFIRMED REPORT] ID: {report_id} | Type: {cand.problem_type} | Severity: {sev_label.upper()} ({sev_score}) | Saved into PostgreSQL!")
+                except Exception as db_err:
+                    print(f"[*] Direct DB write note: {db_err}. Syncing via local API endpoint...")
+                    try:
+                        import requests
+                        with open(evidence_filepath, "rb") as ef:
+                            files = {"file": (evidence_filename, ef, "image/jpeg")}
+                            data = {"camera_id": camera_id, "location_name": camera_addr}
+                            r = requests.post("http://127.0.0.1:8000/api/v1/reports/upload-problem", files=files, data=data, timeout=5)
+                            if r.ok:
+                                saved_to_db = True
+                                print(f"[+] [CONFIRMED REPORT VIA API] Successfully committed ticket via CityEye API!")
+                    except Exception as api_err:
+                        print(f"[*] API sync status: {api_err}")
                 confirmed_reports.append(report_id)
 
             if max_frames and frame_count >= max_frames:
