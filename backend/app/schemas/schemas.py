@@ -50,6 +50,7 @@ class DetectionOut(BaseModel):
     confidence: float
     confirmed_frame_count: int
     evidence_image_path: str | None
+    generation_source: str | None = "template_fallback"
 
 
 # -- Report --
@@ -66,6 +67,7 @@ class ReportOut(BaseModel):
     confidence: float
     confirmed_frame_count: int
     evidence_image_path: str | None
+    generation_source: str | None = "template_fallback"
     status: ReportStatus
     reviewed_by: str | None
     reviewed_at: datetime | None
@@ -92,6 +94,7 @@ class ReportOut(BaseModel):
             confidence=self.confidence,
             confirmed_frame_count=self.confirmed_frame_count,
             evidence_image_path=self.evidence_image_path,
+            generation_source=getattr(self, "generation_source", "template_fallback") or "template_fallback",
         )
 
 

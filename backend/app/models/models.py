@@ -67,6 +67,7 @@ class Report(Base):
     confidence: Mapped[float] = mapped_column(Float, default=0.0)
     confirmed_frame_count: Mapped[int] = mapped_column(Integer, default=5)
     evidence_image_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    generation_source: Mapped[str | None] = mapped_column(String(50), nullable=True, default="template_fallback")
 
     # Workflow
     status: Mapped[ReportStatus] = mapped_column(SAEnum(ReportStatus), default=ReportStatus.pending_officer_review, index=True)

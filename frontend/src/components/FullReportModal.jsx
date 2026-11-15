@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import {
   FileText, Download, X, Camera, MapPin, Shield, AlertTriangle,
-  Clock, Cpu, CheckCircle2, Building2, Activity
+  Clock, Cpu, CheckCircle2, Building2, Activity, Sparkles
 } from 'lucide-react';
 import { resolveMediaUrl } from '../api';
 
@@ -288,6 +288,17 @@ export default function FullReportModal({ report, onClose }) {
             <span className="pill-badge-subtle" style={{ textTransform: 'capitalize', fontWeight: 700 }}>
               <Cpu size={13} /> {det.problem_type || 'civic issue'}
             </span>
+            {(report.generation_source === 'gemini' || det.generation_source === 'gemini') && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '5px 14px', borderRadius: 9999,
+                background: 'rgba(56, 189, 248, 0.15)',
+                color: '#0284c7', fontWeight: 700, fontSize: 12,
+                border: '1px solid rgba(56, 189, 248, 0.35)'
+              }}>
+                <Sparkles size={13} /> Gemini Multimodal AI
+              </span>
+            )}
           </div>
 
           {/* CCTV Evidence Frame */}

@@ -69,7 +69,8 @@ async def upload_problem(
 
     # 3. Run AI Detection & Annotation Engine
     try:
-        detection = detect_and_annotate_problem(raw_path, file.filename)
+        loc_str = location_name or (camera.address if camera else "Municipal Road Network")
+        detection = detect_and_annotate_problem(raw_path, file.filename, location_name=loc_str)
     except Exception as e:
         print(f"[!] Detection Engine error: {e}")
         # Graceful fallback so demo never crashes
@@ -99,6 +100,7 @@ async def upload_problem(
         confidence=detection["confidence"],
         confirmed_frame_count=5,
         evidence_image_path=detection["evidence_image_path"],
+        generation_source=detection.get("generation_source", "template_fallback"),
         status=ReportStatus.pending_officer_review,
         created_at=datetime.now(timezone.utc)
     )

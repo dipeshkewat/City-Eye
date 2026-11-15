@@ -79,10 +79,10 @@ def extract_best_frame(video_path: str) -> np.ndarray:
     return frame
 
 
-def detect_and_annotate_problem(input_file_path: str, original_filename: str) -> dict:
+def detect_and_annotate_problem(input_file_path: str, original_filename: str, location_name: str | None = None) -> dict:
     """
     Takes an uploaded image or video, runs YOLO detection, draws bounding boxes,
-    and returns full incident metadata.
+    and returns full incident metadata (with Google Gemini multimodal analysis if configured).
     """
     ext = os.path.splitext(original_filename.lower())[1]
     is_video = ext in [".mp4", ".avi", ".mov", ".webm", ".mkv"]
@@ -151,19 +151,53 @@ def detect_and_annotate_problem(input_file_path: str, original_filename: str) ->
         }
         recommended_dept = dept_map.get(p_type, "Road Maintenance & Infrastructure (PWD)")
         
+        title = f"Active Road Defect: {p_type.capitalize()} Detected via User Upload"
+        desc = (
+            f"Automated computer vision detection on uploaded media ({original_filename}). "
+            f"Identified {p_type.upper()} with confidence 91.2%. "
+            f"Calculated severity score: {sev_score} ({sev_label.upper()}). "
+            f"Assigned to {recommended_dept} for immediate inspection and field remediation."
+        )
+        citizen_summary = (
+            f"AI detected a {p_type} on public infrastructure with {sev_label.upper()} severity. "
+            f"Inspection ticket generated and routed to {recommended_dept}."
+        )
+        generation_source = "template_fallback"
+
+        # Attempt Google Gemini Multimodal Analysis if configured
+        try:
+            from app.core.gemini_service import generate_defect_analysis_with_gemini
+            gemini_analysis = generate_defect_analysis_with_gemini(
+                image_path=annotated_path,
+                problem_type=p_type,
+                severity_label=sev_label,
+                severity_score=sev_score,
+                confidence=0.912,
+                location_name=location_name or "Municipal Road Network",
+            )
+            if gemini_analysis:
+                title = gemini_analysis.get("title") or title
+                desc = gemini_analysis.get("description") or desc
+                citizen_summary = gemini_analysis.get("citizen_summary") or citizen_summary
+                recommended_dept = gemini_analysis.get("recommended_department") or recommended_dept
+                generation_source = "gemini"
+        except Exception as g_err:
+            print(f"[*] Gemini analysis status: {g_err}")
+        
         return {
             "problem_type": p_type,
             "severity_label": sev_label,
             "severity_score": sev_score,
             "confidence": 0.912,
-            "title": f"Active Road Defect: {p_type.capitalize()} Detected via User Upload",
-            "description": f"Automated computer vision detection on uploaded media ({original_filename}). Identified {p_type.upper()} with confidence 91.2%. Calculated severity score: {sev_score} ({sev_label.upper()}). Assigned to {recommended_dept} for immediate inspection and field remediation.",
-            "citizen_summary": f"AI detected a {p_type} on public infrastructure with {sev_label.upper()} severity. Inspection ticket generated and routed to {recommended_dept}.",
+            "title": title,
+            "description": desc,
+            "citizen_summary": citizen_summary,
             "recommended_department": recommended_dept,
             "evidence_image_path": f"/uploads/evidence/{annotated_filename}",
             "detections_count": 1,
             "primary_box": [x1, y1, x2, y2],
             "is_video": is_video,
+            "generation_source": generation_source,
         }
 
     h, w = raw_image.shape[:2]
@@ -337,6 +371,27 @@ def detect_and_annotate_problem(input_file_path: str, original_filename: str) ->
         f"AI detected a {prob} on public infrastructure with {sev_label.upper()} severity. "
         f"Inspection ticket generated and routed to {recommended_dept}."
     )
+    generation_source = "template_fallback"
+
+    # Attempt Google Gemini Multimodal Analysis if configured
+    try:
+        from app.core.gemini_service import generate_defect_analysis_with_gemini
+        gemini_analysis = generate_defect_analysis_with_gemini(
+            image_path=annotated_path,
+            problem_type=prob,
+            severity_label=sev_label,
+            severity_score=sev_score,
+            confidence=best_detection["confidence"],
+            location_name=location_name or "Municipal Road Network",
+        )
+        if gemini_analysis:
+            title = gemini_analysis.get("title") or title
+            desc = gemini_analysis.get("description") or desc
+            citizen_summary = gemini_analysis.get("citizen_summary") or citizen_summary
+            recommended_dept = gemini_analysis.get("recommended_department") or recommended_dept
+            generation_source = "gemini"
+    except Exception as g_err:
+        print(f"[*] Gemini analysis status: {g_err}")
     
     return {
         "problem_type": prob,
@@ -351,4 +406,5 @@ def detect_and_annotate_problem(input_file_path: str, original_filename: str) ->
         "detections_count": len(detections),
         "primary_box": best_detection["box"],
         "is_video": is_video,
+        "generation_source": generation_source,
     }

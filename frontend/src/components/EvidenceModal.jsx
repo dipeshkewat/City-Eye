@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, CheckCircle2, XCircle, Users, AlertTriangle, ShieldCheck, Camera, MapPin, Cpu, FileText } from 'lucide-react';
+import { Eye, CheckCircle2, XCircle, Users, AlertTriangle, ShieldCheck, Camera, MapPin, Cpu, FileText, Sparkles } from 'lucide-react';
 import FullReportModal from './FullReportModal';
 import { resolveMediaUrl } from '../api';
 
@@ -24,6 +24,17 @@ export default function EvidenceModal({ report, onClose, onApprove, onReject, on
               <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--color-navy)' }}>
                 {report.title}
               </span>
+              {(report.generation_source === 'gemini' || det.generation_source === 'gemini') && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '3px 10px', borderRadius: 9999,
+                  background: 'rgba(56, 189, 248, 0.15)',
+                  color: '#0284c7', fontWeight: 700, fontSize: 11,
+                  border: '1px solid rgba(56, 189, 248, 0.35)'
+                }}>
+                  <Sparkles size={11} /> Gemini AI
+                </span>
+              )}
             </div>
             <button className="icon-btn-circle" style={{ width: 32, height: 32 }} onClick={onClose}>✕</button>
           </div>

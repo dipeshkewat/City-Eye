@@ -363,7 +363,19 @@ export default function UploadProblemModal({ isOpen, onClose, onProblemDetected 
                 >
                   <CheckCircle2 size={20} />
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>AI Defect Verified & Ticket Generated!</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      AI Defect Verified & Ticket Generated!
+                      {detectedReport.generation_source === 'gemini' && (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          padding: '2px 8px', borderRadius: 9999,
+                          background: 'rgba(56, 189, 248, 0.2)',
+                          color: '#0284c7', fontSize: 11, fontWeight: 700
+                        }}>
+                          <Sparkles size={11} /> Gemini Report
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontSize: 12, opacity: 0.9 }}>
                       Incident committed to municipal PostgreSQL database with status <b>Pending Review</b>.
                     </div>

@@ -49,6 +49,11 @@ $$\text{Severity Score} = (\text{Area Ratio} \times 0.5) + (\text{Temporal Persi
 * **👷 Work Team:** Receives assigned work orders, updates status to *In Progress*, and submits resolution notes and proof-of-fix photos to mark items *Resolved*.
 * **📈 Senior Officer:** Executive oversight dashboard with city-wide Leaflet heatmaps, incident breakdown charts, and departmental SLA analytics (read-only).
 
+### 6. ✨ Google Gemini Multimodal AI Report Synthesis
+* Integrates **Google Gemini 1.5 Flash / 2.0 Flash** for multimodal visual defect inspection.
+* Automatically synthesizes comprehensive civil engineering damage reports, monsoon/hazard evaluations, and clear citizen transparency summaries directly from CCTV evidence frames.
+* **Fault-Tolerant Offline Design:** Seamlessly falls back to local deterministic templates if offline or if no API key is configured.
+
 ---
 
 ## 🔄 End-to-End Workflow
