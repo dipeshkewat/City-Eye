@@ -18,6 +18,13 @@ async def lifespan(app: FastAPI):
         print("[*] Initializing PostgreSQL database tables...")
         Base.metadata.create_all(bind=engine)
         try:
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE reports ADD COLUMN IF NOT EXISTS generation_source VARCHAR(50) DEFAULT 'template_fallback'"))
+                conn.commit()
+        except Exception as col_err:
+            print(f"[*] Column check status: {col_err}")
+        try:
             from seed import run_seed
             run_seed()
         except Exception as seed_err:
