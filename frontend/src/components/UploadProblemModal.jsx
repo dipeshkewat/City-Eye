@@ -21,6 +21,21 @@ export default function UploadProblemModal({ isOpen, onClose, onProblemDetected 
 
   if (!isOpen) return null;
 
+  const handleUseSample = async (samplePath, sampleName, isSampleVideo = false) => {
+    try {
+      setError(null);
+      setDetectedReport(null);
+      const res = await fetch(samplePath);
+      const blob = await res.blob();
+      const sampleFile = new File([blob], sampleName, { type: isSampleVideo ? 'video/mp4' : 'image/svg+xml' });
+      setFile(sampleFile);
+      setIsVideo(isSampleVideo);
+      setPreviewUrl(samplePath);
+    } catch (e) {
+      console.error('Error loading sample:', e);
+    }
+  };
+
   const handleFileChange = (e) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -152,19 +167,19 @@ export default function UploadProblemModal({ isOpen, onClose, onProblemDetected 
 
   return (
     <>
-      <div className="modal-backdrop" onClick={onClose} style={{ zIndex: 1100 }}>
+      <div className="modal-overlay" onClick={onClose} style={{ zIndex: 1100 }}>
         <div
-          className="modal-container"
+          className="modal-card"
           onClick={(e) => e.stopPropagation()}
-          style={{ maxWidth: 680, width: '92%', maxHeight: '90vh', overflowY: 'auto' }}
+          style={{ maxWidth: 700, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
         >
           {/* Header */}
-          <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: 16 }}>
+          <div className="modal-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div
                 style={{
-                  width: 44,
-                  height: 44,
+                  width: 42,
+                  height: 42,
                   borderRadius: 12,
                   background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
                   display: 'flex',
@@ -198,13 +213,17 @@ export default function UploadProblemModal({ isOpen, onClose, onProblemDetected 
                 </p>
               </div>
             </div>
-            <button className="btn-close" onClick={onClose}>
-              <X size={18} />
+            <button
+              className="icon-btn-circle"
+              style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={onClose}
+            >
+              <X size={16} />
             </button>
           </div>
 
           {/* Modal Body */}
-          <div style={{ padding: '20px 0' }}>
+          <div className="modal-body" style={{ padding: '20px 28px', overflowY: 'auto' }}>
             {error && (
               <div
                 style={{
@@ -229,51 +248,99 @@ export default function UploadProblemModal({ isOpen, onClose, onProblemDetected 
             {!detectedReport && (
               <div>
                 {!previewUrl ? (
-                  <div
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      border: '2px dashed var(--color-border)',
-                      borderRadius: 14,
-                      padding: '40px 20px',
-                      textAlign: 'center',
-                      background: 'var(--color-surface)',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2563EB')}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*,video/*"
-                      onChange={handleFileChange}
-                      style={{ display: 'none' }}
-                    />
+                  <div>
                     <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
                       style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 28,
-                        background: 'rgba(37,99,235,0.08)',
+                        border: '2px dashed var(--color-border)',
+                        borderRadius: 14,
+                        padding: '36px 20px',
+                        textAlign: 'center',
+                        background: 'var(--color-input-bg)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#2563EB',
+                        gap: 12,
                       }}
+                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2563EB')}
+                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}
                     >
-                      <UploadCloud size={28} />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,video/*"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                      />
+                      <div
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 28,
+                          background: 'rgba(37,99,235,0.1)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#2563EB',
+                        }}
+                      >
+                        <UploadCloud size={28} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-navy)' }}>
+                          Click to browse or drag & drop road media
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
+                          Supports JPG, PNG, WEBP images or MP4, AVI video feeds
+                        </div>
+                      </div>
+                      <span
+                        className="btn-pill-primary"
+                        style={{
+                          padding: '7px 18px',
+                          fontSize: 12,
+                          marginTop: 4,
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        Select Image or Video
+                      </span>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 15, fontWeight: 600 }}>Click to upload or drag & drop</div>
-                      <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>
-                        Supports JPG, PNG, WEBP images or MP4, AVI video feeds
+
+                    {/* Instant Demo Samples */}
+                    <div style={{ marginTop: 16 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: 8 }}>
+                        Or Quick Demo Samples (1-Click Test):
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
+                          onClick={() => handleUseSample('/evidence/pothole-001.svg', 'demo_pothole_road.jpg', false)}
+                        >
+                          <span>🚧</span> Severe Pothole
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
+                          onClick={() => handleUseSample('/evidence/det-001.svg', 'demo_garbage_dump.jpg', false)}
+                        >
+                          <span>🚯</span> Solid Waste / Garbage
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6 }}
+                          onClick={() => handleUseSample('/evidence/det-003.svg', 'demo_waterlogging_junction.jpg', false)}
+                        >
+                          <span>🌊</span> Monsoon Waterlogging
+                        </button>
                       </div>
                     </div>
                   </div>
