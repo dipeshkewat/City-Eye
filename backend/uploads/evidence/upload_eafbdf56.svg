@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="road" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="pothole-depth" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#05070a"/>
+      <stop offset="60%" stop-color="#1a202c"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Road -->
+  <rect width="800" height="450" fill="url(#road)"/>
+
+  <!-- Perspective Asphalt Lines -->
+  <path d="M 0 350 L 800 350" stroke="#334155" stroke-width="2" stroke-dasharray="20 15"/>
+  <path d="M 380 0 L 200 450" stroke="#475569" stroke-width="3" stroke-dasharray="30 20"/>
+  <path d="M 420 0 L 600 450" stroke="#475569" stroke-width="3" stroke-dasharray="30 20"/>
+
+  <!-- Pothole Defect Texture -->
+  <ellipse cx="400" cy="260" rx="110" ry="50" fill="url(#pothole-depth)" stroke="#f97316" stroke-width="2" opacity="0.95"/>
+  <ellipse cx="390" cy="255" rx="70" ry="25" fill="#000000" opacity="0.8"/>
+
+  <!-- YOLO Bounding Box (Pothole - Amber/Orange) -->
+  <rect x="260" y="185" width="280" height="150" fill="none" stroke="#f97316" stroke-width="3" stroke-dasharray="none"/>
+  
+  <!-- Corner Accents -->
+  <path d="M 260 205 L 260 185 L 280 185" fill="none" stroke="#fbbf24" stroke-width="5"/>
+  <path d="M 520 185 L 540 185 L 540 205" fill="none" stroke="#fbbf24" stroke-width="5"/>
+  <path d="M 260 315 L 260 335 L 280 335" fill="none" stroke="#fbbf24" stroke-width="5"/>
+  <path d="M 520 335 L 540 335 L 540 315" fill="none" stroke="#fbbf24" stroke-width="5"/>
+
+  <!-- Pill Badge -->
+  <rect x="260" y="152" width="168" height="28" rx="6" fill="#f97316"/>
+  <text x="270" y="171" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">POTHOLE 94.2%</text>
+
+  <!-- Surveillance Header OSD -->
+  <rect x="15" y="15" width="770" height="36" rx="6" fill="#090d16" opacity="0.85"/>
+  <circle cx="35" cy="33" r="6" fill="#ef4444">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <text x="50" y="38" font-family="monospace" font-size="13" font-weight="bold" fill="#f87171">REC • LIVE</text>
+  <text x="140" y="38" font-family="monospace" font-size="13" fill="#94a3b8">CAM-001 [MG ROAD JUNCTION]</text>
+  <text x="560" y="38" font-family="monospace" font-size="13" fill="#38bdf8">AI INGESTION ACTIVE</text>
+
+  <!-- Crosshair & Coordinates -->
+  <line x1="400" y1="20" x2="400" y2="430" stroke="#38bdf8" stroke-width="0.5" stroke-dasharray="5 5" opacity="0.3"/>
+  <line x1="20" y1="260" x2="780" y2="260" stroke="#38bdf8" stroke-width="0.5" stroke-dasharray="5 5" opacity="0.3"/>
+
+  <!-- Footer Watermark -->
+  <rect x="15" y="405" width="770" height="30" rx="4" fill="#090d16" opacity="0.85"/>
+  <text x="30" y="425" font-family="monospace" font-size="11" fill="#64748b">CITYEYE SURVEILLANCE • MULTI-FRAME VERIFIED (8/8 FRAMES) • SEVERITY: HIGH (0.87)</text>
+</svg>

@@ -1,4 +1,4 @@
-﻿"""
+"""
 CityEye YOLOv8 AI Detection and Ingestion Pipeline.
 Implements Video Ingestion, CLAHE Low-Light/Contrast Pre-Processing,
 YOLOv8 Object Detection, Multi-Frame Confirmation, Severity Calculation,
