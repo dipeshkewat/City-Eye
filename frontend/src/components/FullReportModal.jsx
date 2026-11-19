@@ -20,8 +20,11 @@ export default function FullReportModal({ report, onClose }) {
     hour: '2-digit', minute: '2-digit', hour12: true
   });
 
-  const confidencePct = Math.round((det.confidence || 0.9) * 100);
-  const severityPct = Math.round((det.severity_score || 0.5) * 100);
+  const rawConf = det.confidence ?? report.confidence ?? 0.9;
+  const confidencePct = rawConf > 1 ? Math.min(100, Math.round(rawConf)) : Math.round(rawConf * 100);
+
+  const rawScore = det.severity_score ?? report.severity_score ?? 85;
+  const severityPct = rawScore > 1 ? Math.min(100, Math.round(rawScore)) : Math.round(rawScore * 100);
 
   const getSeverityColor = (label) => {
     if (label === 'high') return '#DC2626';

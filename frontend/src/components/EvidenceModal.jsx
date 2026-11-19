@@ -80,7 +80,7 @@ export default function EvidenceModal({ report, onClose, onApprove, onReject, on
               <div style={{ background: 'var(--color-canvas)', padding: '12px 14px', borderRadius: 14 }}>
                 <div style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Severity</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: '#DC2626' }}>
-                  {det.severity_score || '0.85'} ({det.severity_label || 'high'})
+                  {det.severity_score ? (det.severity_score > 1 ? `${Math.round(det.severity_score)}%` : `${Math.round(det.severity_score * 100)}%`) : '85%'} ({(det.severity_label || 'high').toUpperCase()})
                 </div>
               </div>
               <div style={{ background: 'var(--color-canvas)', padding: '12px 14px', borderRadius: 14 }}>

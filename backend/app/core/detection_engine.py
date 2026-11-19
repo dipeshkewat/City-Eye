@@ -414,18 +414,21 @@ def detect_and_annotate_problem(input_file_path: str, original_filename: str, lo
     
     cv2.imwrite(annotated_path, annotated_image, [int(cv2.IMWRITE_JPEG_QUALITY), 92])
     
-    # 7. Calculate severity and metadata
+    # 7. Calculate realistic municipal severity and metadata
     area_ratio = ((all_x2 - all_x1) * (all_y2 - all_y1)) / float(w * h)
     
-    if area_ratio > 0.12 or calibrated_conf > 0.88 or len(winning_detections) > 4:
-        sev_label = "critical" if (area_ratio > 0.22 or len(winning_detections) > 10) else "high"
-        sev_score = min(98.5, round(68.0 + (area_ratio * 100.0) + (calibrated_conf * 15.0), 1))
-    elif area_ratio > 0.05:
+    if area_ratio > 0.28 or len(winning_detections) > 12:
+        sev_label = "critical"
+        sev_score = min(94.0, round(82.0 + (area_ratio * 30.0), 1))
+    elif area_ratio > 0.12 or len(winning_detections) > 3:
+        sev_label = "high"
+        sev_score = min(81.0, round(66.0 + (area_ratio * 50.0), 1))
+    elif area_ratio > 0.04:
         sev_label = "medium"
-        sev_score = round(48.0 + (area_ratio * 90.0), 1)
+        sev_score = min(64.0, round(45.0 + (area_ratio * 80.0), 1))
     else:
         sev_label = "low"
-        sev_score = round(30.0 + (area_ratio * 80.0), 1)
+        sev_score = min(40.0, round(25.0 + (area_ratio * 70.0), 1))
         
     prob = winning_class
     dept_map = {
