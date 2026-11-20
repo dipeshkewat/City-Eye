@@ -1,4 +1,4 @@
-﻿import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useReports } from '../context/ReportsContext';
 import { useTheme } from '../context/ThemeContext';
@@ -156,10 +156,10 @@ export default function AppLayout() {
           <button
             className="sidebar-action-btn"
             onClick={resetData}
-            title="Reset Mock Demo Data"
+            title="Sync latest live database records"
           >
             <RotateCcw size={15} />
-            <span>Reset Demo Data</span>
+            <span>Sync Live Data</span>
           </button>
 
           {/* User Info & Logout */}

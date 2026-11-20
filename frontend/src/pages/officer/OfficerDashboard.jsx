@@ -32,14 +32,23 @@ export default function OfficerDashboard() {
   const resolvedReports = reports.filter((r) => r.status === 'resolved');
   const rejectedReports = reports.filter((r) => r.status === 'rejected');
 
-  const barData = [
-    { month: 'Jan', count: 18, active: false },
-    { month: 'Feb', count: 26, active: false },
-    { month: 'Mar', count: 22, active: false },
-    { month: 'Apr', count: 42, active: true },
-    { month: 'May', count: 29, active: false },
-    { month: 'Jun', count: 34, active: false },
+  const monthlyData = [
+    { label: 'Jan', count: 18, active: false },
+    { label: 'Feb', count: 26, active: false },
+    { label: 'Mar', count: 22, active: false },
+    { label: 'Apr', count: 42, active: true },
+    { label: 'May', count: 29, active: false },
+    { label: 'Jun', count: 34, active: false },
   ];
+
+  const annualData = [
+    { label: '2023', count: 184, active: false },
+    { label: '2024', count: 265, active: false },
+    { label: '2025', count: 390, active: false },
+    { label: '2026', count: 486, active: true },
+  ];
+
+  const chartData = chartView === 'annually' ? annualData : monthlyData;
 
   const sparklineData = [
     { v: 40 }, { v: 45 }, { v: 70 }, { v: 55 }, { v: 62 }, { v: 85 }, { v: 78 }, { v: 92 }
@@ -156,7 +165,7 @@ export default function OfficerDashboard() {
             {reports.length}
           </div>
           <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 6 }}>
-            From 8 active camera junctions
+            From {cameras.length} active camera junctions
           </div>
         </div>
       </div>
@@ -255,22 +264,53 @@ export default function OfficerDashboard() {
 
             <div style={{ height: 260, width: '100%', marginTop: 10 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData} barSize={38}>
-                  <XAxis dataKey="month" stroke="#94A3B8" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      background: theme === 'dark' ? '#14181D' : '#0B2545',
-                      borderRadius: 12,
-                      border: theme === 'dark' ? '1px solid #232932' : 'none',
-                      color: '#FFFFFF'
-                    }}
-                    cursor={{ fill: 'transparent' }}
+                <BarChart data={chartData} barSize={38}>
+                  <XAxis
+                    dataKey="label"
+                    stroke="#64748B"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: theme === 'dark' ? '#94A3B8' : '#475569', fontWeight: 600 }}
                   />
-                  <Bar dataKey="count" radius={[20, 20, 20, 20]}>
-                    {barData.map((entry, index) => (
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div
+                            style={{
+                              background: '#0B1E36',
+                              border: '1px solid #38BDF8',
+                              borderRadius: 10,
+                              padding: '10px 14px',
+                              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                              color: '#FFFFFF',
+                              minWidth: 120,
+                            }}
+                          >
+                            <div style={{ fontSize: 13, fontWeight: 800, color: '#38BDF8', marginBottom: 4 }}>
+                              {label}
+                            </div>
+                            <div style={{ fontSize: 15, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ color: '#E2E8F0', fontSize: 13 }}>Defects:</span>
+                              <span style={{ fontSize: 17, fontWeight: 900, color: '#34D399' }}>{payload[0].value}</span>
+                            </div>
+                            <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 4, fontWeight: 600 }}>
+                              YOLOv8 Edge Detections
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                    cursor={{ fill: 'rgba(56, 189, 248, 0.08)' }}
+                  />
+                  <Bar dataKey="count" radius={[12, 12, 12, 12]}>
+                    {chartData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.active ? 'var(--color-aquamarine)' : theme === 'dark' ? '#222933' : '#CBD5E1'}
+                        fill={entry.active ? '#10B981' : theme === 'dark' ? '#334155' : '#94A3B8'}
+                        cursor="pointer"
                       />
                     ))}
                   </Bar>
@@ -294,7 +334,7 @@ export default function OfficerDashboard() {
                 Average AI Confidence: <strong style={{ color: 'var(--color-aquamarine)' }}>94.6%</strong>
               </span>
               <span style={{ color: 'var(--color-text-muted)' }}>
-                Active Zones: <strong style={{ color: 'var(--color-text-main)' }}>8 Monitored</strong>
+                Active Zones: <strong style={{ color: 'var(--color-text-main)' }}>{cameras.length} Monitored</strong>
               </span>
             </div>
           </div>

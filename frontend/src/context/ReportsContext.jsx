@@ -23,43 +23,43 @@ export function ReportsProvider({ children }) {
     return saved ? JSON.parse(saved) : MOCK_CAMERAS;
   });
 
-  // Fetch live data from backend on mount or token change
-  useEffect(() => {
-    const token = localStorage.getItem('cityeye_token');
-    if (!token || token.startsWith('mock-')) return;
-
-    let isMounted = true;
+  // Fetch live real data from backend on mount
+  const fetchLiveData = () => {
     apiGetReports()
       .then((data) => {
-        if (isMounted && Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           // Normalise backend reports to match UI format
           const formatted = data.map((r) => ({
             ...r,
-            location_name: r.location_name || (r.camera ? r.camera.address || r.camera.name : 'Unknown Location'),
+            location_name: r.location_name || (r.camera ? r.camera.address || r.camera.name : 'Municipal Road Sector'),
             gps: {
               lat: r.gps_lat || (r.camera ? r.camera.latitude : 19.076),
               lng: r.gps_lng || (r.camera ? r.camera.longitude : 72.8777),
             },
-            evidence_photo: r.evidence_image_path || r.detection?.evidence_image_path || r.evidence_photo_path || '/evidence/pothole-001.svg',
+            evidence_photo: r.evidence_image_path || r.detection?.evidence_image_path || r.evidence_photo_path,
           }));
           setReports(formatted);
+          localStorage.setItem('cityeye_reports_state', JSON.stringify(formatted));
         }
       })
-      .catch(() => {
-        // Fall back gracefully to local state
+      .catch((err) => {
+        console.warn('Live reports fetch note:', err.message);
       });
 
     apiGetCameras()
       .then((data) => {
-        if (isMounted && Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           setCameras(data);
+          localStorage.setItem('cityeye_cameras_state', JSON.stringify(data));
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.warn('Live cameras fetch note:', err.message);
+      });
+  };
 
-    return () => {
-      isMounted = false;
-    };
+  useEffect(() => {
+    fetchLiveData();
   }, []);
 
   useEffect(() => {
@@ -207,10 +207,9 @@ export function ReportsProvider({ children }) {
   };
 
   const resetData = () => {
-    setReports(MOCK_REPORTS);
-    setCameras(MOCK_CAMERAS);
     localStorage.removeItem('cityeye_reports_state');
     localStorage.removeItem('cityeye_cameras_state');
+    fetchLiveData();
   };
 
   return (

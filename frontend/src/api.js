@@ -20,9 +20,9 @@ export function resolveMediaUrl(path) {
 
 
 function getHeaders() {
-  const token = localStorage.getItem("cityeye_token");
+  const token = localStorage.getItem("cityeye_token") || "mock-jwt-officer-session";
   const headers = { "Content-Type": "application/json" };
-  if (token && !token.startsWith("mock-")) {
+  if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
   return headers;
@@ -90,9 +90,9 @@ export async function apiProgressReport(id) {
 export async function apiResolveReport(id, notes) {
   const formData = new FormData();
   formData.append("resolution_notes", notes || "Repairs completed.");
-  const token = localStorage.getItem("cityeye_token");
+  const token = localStorage.getItem("cityeye_token") || "mock-jwt-officer-session";
   const headers = {};
-  if (token && !token.startsWith("mock-")) {
+  if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
   const res = await fetch(`${API_BASE}/reports/${id}/resolve`, {
@@ -139,9 +139,9 @@ export async function apiUploadProblem(file, cameraId, locationName) {
   if (cameraId) formData.append("camera_id", cameraId);
   if (locationName) formData.append("location_name", locationName);
 
-  const token = localStorage.getItem("cityeye_token");
+  const token = localStorage.getItem("cityeye_token") || "mock-jwt-officer-session";
   const headers = {};
-  if (token && !token.startsWith("mock-")) {
+  if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 

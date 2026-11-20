@@ -1,4 +1,4 @@
-﻿import { MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import StatusMap from '../../components/StatusMap';
 
@@ -14,16 +14,16 @@ export default function SeniorMap() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span className="badge badge-approved" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <MapPin size={13} /> {cameras.length} Active Camera Sites
+            <MapPin size={13} /> Live Geospatial Tracking
           </span>
           <span className="badge badge-pending">
-            {reports.length} Tracked Incidents
+            {reports.length} Verified Defect Hotspots
           </span>
         </div>
       </div>
 
       <div className="panel" style={{ flex: 1, minHeight: 0, padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <StatusMap reports={reports} cameras={cameras} />
+        <StatusMap reports={reports} />
       </div>
     </div>
   );

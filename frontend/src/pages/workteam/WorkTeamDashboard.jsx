@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Wrench, CheckCircle2, Clock, AlertTriangle, Eye, ArrowUpRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Wrench, CheckCircle2, Clock, AlertTriangle, Eye, ArrowUpRight, ClipboardList } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import { useAuth } from '../../auth/AuthContext';
 import ResolveModal from '../../components/ResolveModal';
@@ -9,6 +10,7 @@ import { resolveMediaUrl } from '../../api';
 export default function WorkTeamDashboard() {
   const { reports, startWork, resolveReport } = useReports();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [resolveId, setResolveId] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null);
 
@@ -33,7 +35,12 @@ export default function WorkTeamDashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 24 }}>
-        <div className="modern-card">
+        <div
+          className="modern-card"
+          style={{ cursor: 'pointer' }}
+          onClick={() => navigate('/workteam/assignments')}
+          title="Click to view full field assignments"
+        >
           <div className="card-header-row">
             <div className="card-title-group">
               <h3>Assigned Orders</h3>
@@ -48,7 +55,12 @@ export default function WorkTeamDashboard() {
           </div>
         </div>
 
-        <div className="modern-card">
+        <div
+          className="modern-card"
+          style={{ cursor: 'pointer' }}
+          onClick={() => navigate('/workteam/assignments')}
+          title="Click to view full field assignments"
+        >
           <div className="card-header-row">
             <div className="card-title-group">
               <h3>Active On-Site</h3>
@@ -63,7 +75,12 @@ export default function WorkTeamDashboard() {
           </div>
         </div>
 
-        <div className="modern-card">
+        <div
+          className="modern-card"
+          style={{ cursor: 'pointer' }}
+          onClick={() => navigate('/workteam/assignments')}
+          title="Click to view completed fixes"
+        >
           <div className="card-header-row">
             <div className="card-title-group">
               <h3>Completed Fixes</h3>

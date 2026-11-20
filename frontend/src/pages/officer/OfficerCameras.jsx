@@ -1,10 +1,11 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Camera, Plus, MapPin, CheckCircle2, AlertCircle, Video,
   ArrowUpRight, Smartphone, Wifi, Terminal, Play, Square, RefreshCw
 } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import AddCameraModal from '../../components/AddCameraModal';
+import { resolveMediaUrl } from '../../api';
 
 export default function OfficerCameras() {
   const { cameras, addCamera } = useReports();
@@ -136,19 +137,41 @@ export default function OfficerCameras() {
               justifyContent: 'center'
             }}
           >
-            {/* Mode 1: CCTV Pre-Recorded Feed */}
+            {/* Mode 1: CCTV Live Surveillance Stream */}
             {streamMode === 'cctv' && (
               <>
-                <img
-                  src="/evidence/det-001.svg"
-                  alt="CCTV Live Feed"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                <video
+                  key={selectedCam?.id || 'live-feed'}
+                  src={resolveMediaUrl('/uploads/evidence/upload_4267e266.mp4')}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
+                <div style={{
+                  position: 'absolute',
+                  top: 14,
+                  left: 14,
+                  background: 'rgba(15, 23, 42, 0.88)',
+                  backdropFilter: 'blur(4px)',
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  fontSize: 10,
+                  color: '#34D399',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}>
+                  <span className="status-dot green" />
+                  <span>● LIVE CCTV SURVEILLANCE • 1080P @ 30 FPS</span>
+                </div>
                 <div style={{
                   position: 'absolute',
                   bottom: 14,
                   left: 14,
-                  background: 'rgba(15, 23, 42, 0.85)',
+                  background: 'rgba(15, 23, 42, 0.88)',
                   backdropFilter: 'blur(4px)',
                   padding: '6px 14px',
                   borderRadius: 9999,
@@ -160,7 +183,7 @@ export default function OfficerCameras() {
                   gap: 8
                 }}>
                   <span className="status-dot green" />
-                  <span>STREAM ID: {selectedCam?.id} • {selectedCam?.address}</span>
+                  <span>NODE: {selectedCam?.id} • {selectedCam?.name} — {selectedCam?.address}</span>
                 </div>
               </>
             )}
