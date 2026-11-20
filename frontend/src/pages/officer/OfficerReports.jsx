@@ -5,7 +5,7 @@ import EvidenceModal from '../../components/EvidenceModal';
 import UploadProblemModal from '../../components/UploadProblemModal';
 
 export default function OfficerReports() {
-  const { reports, addUploadedReport } = useReports();
+  const { reports, addUploadedReport, approveReport, rejectReport, assignReport } = useReports();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -219,6 +219,18 @@ export default function OfficerReports() {
           report={selectedReport}
           userRole="officer"
           onClose={() => setSelectedReport(null)}
+          onApprove={(id) => {
+            approveReport(id);
+            setSelectedReport((prev) => (prev && prev.id === id ? { ...prev, status: 'approved' } : prev));
+          }}
+          onReject={(id) => {
+            rejectReport(id, 'Rejected by Officer review');
+            setSelectedReport((prev) => (prev && prev.id === id ? { ...prev, status: 'rejected' } : prev));
+          }}
+          onAssign={(id) => {
+            assignReport(id, 'team-alpha');
+            setSelectedReport((prev) => (prev && prev.id === id ? { ...prev, status: 'assigned' } : prev));
+          }}
         />
       )}
 

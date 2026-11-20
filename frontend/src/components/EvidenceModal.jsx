@@ -143,13 +143,19 @@ export default function EvidenceModal({ report, onClose, onApprove, onReject, on
                 <button
                   className="btn-pill-secondary"
                   style={{ color: '#DC2626' }}
-                  onClick={() => { onReject(report.id); onClose(); }}
+                  onClick={() => {
+                    if (typeof onReject === 'function') onReject(report.id);
+                    onClose();
+                  }}
                 >
                   Reject Report
                 </button>
                 <button
                   className="btn-pill-primary"
-                  onClick={() => { onApprove(report.id); onClose(); }}
+                  onClick={() => {
+                    if (typeof onApprove === 'function') onApprove(report.id);
+                    onClose();
+                  }}
                 >
                   Approve Report
                 </button>
@@ -159,7 +165,10 @@ export default function EvidenceModal({ report, onClose, onApprove, onReject, on
             {userRole === 'officer' && report.status === 'approved' && (
               <button
                 className="btn-pill-primary"
-                onClick={() => { onAssign(report.id); onClose(); }}
+                onClick={() => {
+                  if (typeof onAssign === 'function') onAssign(report.id);
+                  onClose();
+                }}
               >
                 Assign to Crew
               </button>

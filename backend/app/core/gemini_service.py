@@ -22,17 +22,15 @@ def get_gemini_api_key() -> Optional[str]:
     return None
 
 
-def generate_defect_analysis_with_gemini(
+def classify_and_analyze_with_gemini(
     image_path: str,
-    problem_type: str,
-    severity_label: str,
-    severity_score: float,
-    confidence: float,
-    location_name: Optional[str] = None,
+    location_name: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
     """
-    Analyzes an infrastructure defect image using Google Gemini Multimodal API.
-    Returns structured incident report metadata, or None if unavailable/fails.
+    Multimodal Visual AI Arbiter:
+    Inspects the street/road image directly using Google Gemini Vision,
+    accurately determines whether the primary problem is a pothole, garbage dump, or waterlogging,
+    and returns a structured incident assessment with plain-language summaries.
     """
     api_key = get_gemini_api_key()
     if not api_key:
@@ -41,53 +39,53 @@ def generate_defect_analysis_with_gemini(
     try:
         import google.generativeai as genai
     except ImportError:
-        logger.warning("[!] google-generativeai package not installed. Skipping Gemini analysis.")
+        logger.warning("[!] google-generativeai package not installed.")
         return None
 
     try:
         genai.configure(api_key=api_key)
-        model_name = settings.GEMINI_MODEL or "gemini-1.5-flash"
-        model = genai.GenerativeModel(model_name)
+        preferred_model = settings.GEMINI_MODEL or "gemini-2.5-flash"
 
-        # Prepare multimodal image input
-        pil_image = None
-        if os.path.exists(image_path):
-            try:
-                pil_image = Image.open(image_path)
-            except Exception as img_err:
-                logger.warning(f"[!] Could not open image for Gemini: {img_err}")
+        if not os.path.exists(image_path):
+            return None
 
-        prompt = f"""You are the senior municipal AI infrastructure inspection analyst for CityEye (Municipal Corporation).
-Analyze this CCTV surveillance frame and defect metadata:
-- Detected Defect: {problem_type.upper()}
-- Severity Rating: {severity_label.upper()} (Score: {severity_score}/100)
-- AI Detection Confidence: {confidence * 100:.1f}%
-- Camera Location: {location_name or 'City Road Network'}
+        pil_image = Image.open(image_path)
 
-Produce an official municipal incident report. Output ONLY a valid JSON object matching this schema without markdown fences:
+        prompt = f"""You are the expert municipal computer vision inspector for CityEye (Municipal Surveillance System).
+Carefully analyze this street/infrastructure image. Identify the SINGLE primary civic defect shown.
+Classify it strictly as one of:
+1. "pothole" - Hole, crater, asphalt crack, or cavity in the road surface.
+2. "garbage" - Scattered solid waste, trash pile, plastic litter, or roadside dump.
+3. "waterlogging" - Standing water pool, flooded roadway, submerged curb/gutter, or stagnant rainwater puddle.
+
+Output ONLY valid JSON without markdown wrapping:
 {{
-  "title": "Concise official incident title (max 75 characters)",
-  "description": "Comprehensive engineering assessment detailing physical defect dimensions, structural degradation, immediate hazard to two-wheelers and pedestrians, potential monsoon/traffic disruption, and field observations.",
-  "citizen_summary": "Clear, reassuring 1-2 sentence status summary for the citizen transparency portal.",
-  "recommended_department": "Exact department name: 'Road Maintenance & Infrastructure (PWD)', 'Solid Waste Management Department', or 'Stormwater & Drainage Department'",
-  "urgency": "Low, Medium, High, or Critical",
-  "remediation_recommendation": "Technical field instructions for the dispatched work crew (e.g. cold-mix bitumen patching, drain clearance, hydraulic skip loader)."
+  "primary_defect": "pothole" or "garbage" or "waterlogging",
+  "confidence": 0.95,
+  "title": "Concise official incident title (e.g. 'Active Pothole Hazard on Road Surface')",
+  "description": "Comprehensive engineering assessment detailing physical defect dimensions, structural degradation, immediate hazard to two-wheelers and pedestrians, potential monsoon/traffic disruption, and field observations. Make it clear and structured.",
+  "citizen_summary": "Plain-English, easy-to-understand 2-3 sentence summary explaining what the issue is, the potential safety impact on everyday road users or pedestrians, and that the municipal department has been notified for repair.",
+  "recommended_department": "Road Maintenance & Infrastructure (PWD)" or "Solid Waste Management Department" or "Stormwater & Drainage Department",
+  "severity_label": "low" or "medium" or "high" or "critical",
+  "severity_score": 85.0
 }}"""
 
-        content = [prompt]
-        if pil_image:
-            content.append(pil_image)
+        response = None
+        model_used = None
+        for m_name in [preferred_model, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
+            try:
+                model = genai.GenerativeModel(m_name)
+                response = model.generate_content([prompt, pil_image], generation_config={'temperature': 0.1})
+                model_used = m_name
+                break
+            except Exception as m_err:
+                logger.info(f"Model {m_name} attempt note: {m_err}")
+                continue
 
-        response = model.generate_content(
-            content,
-            generation_config=genai.GenerationConfig(
-                response_mime_type="application/json",
-                temperature=0.2,
-            )
-        )
+        if not response:
+            return None
 
         raw_text = response.text.strip()
-        # Clean potential markdown wrapping if present
         if raw_text.startswith("```json"):
             raw_text = raw_text[7:]
         if raw_text.startswith("```"):
@@ -97,11 +95,24 @@ Produce an official municipal incident report. Output ONLY a valid JSON object m
         raw_text = raw_text.strip()
 
         data = json.loads(raw_text)
+        
+        # Normalize problem type
+        raw_type = str(data.get("primary_defect", "")).lower()
+        if "water" in raw_type or "flood" in raw_type or "drain" in raw_type or "puddle" in raw_type:
+            data["problem_type"] = "waterlogging"
+            data["recommended_department"] = "Stormwater & Drainage Department"
+        elif "garbage" in raw_type or "trash" in raw_type or "waste" in raw_type or "dump" in raw_type:
+            data["problem_type"] = "garbage"
+            data["recommended_department"] = "Solid Waste Management Department"
+        else:
+            data["problem_type"] = "pothole"
+            data["recommended_department"] = "Road Maintenance & Infrastructure (PWD)"
+
         data["generation_source"] = "gemini"
-        data["model_used"] = model_name
-        print(f"[*] CityEye Gemini analysis successfully generated: {data.get('title')}")
+        data["model_used"] = model_used
+        print(f"[*] CityEye Gemini Multimodal Visual Classification: {data['problem_type'].upper()} ({data.get('confidence', 0.95)*100:.1f}%)")
         return data
 
     except Exception as e:
-        print(f"[*] Note: Gemini API analysis unavailable ({e}). Using deterministic template fallback.")
+        print(f"[*] Gemini visual classification note ({e}). Continuing to computer vision pipeline.")
         return None
