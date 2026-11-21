@@ -1,69 +1,126 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Camera, Plus, MapPin, CheckCircle2, AlertCircle, Video,
-  ArrowUpRight, Smartphone, Wifi, Terminal, Play, Square, RefreshCw
+  ArrowUpRight, Smartphone, Wifi, Play, Square, RefreshCw,
+  ExternalLink, QrCode, Globe, Radio
 } from 'lucide-react';
 import { useReports } from '../../context/ReportsContext';
 import AddCameraModal from '../../components/AddCameraModal';
-import { resolveMediaUrl } from '../../api';
+import { resolveMediaUrl, API_BASE } from '../../api';
 
 export default function OfficerCameras() {
   const { cameras, addCamera } = useReports();
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCam, setSelectedCam] = useState(cameras[0] || null);
 
-  // Live Camera Modes: 'cctv' | 'phone_ip' | 'device_webcam'
+  // Stream Modes: 'cctv' | 'phone_ip' | 'device_webcam'
   const [streamMode, setStreamMode] = useState('cctv');
-  const [phoneUrl, setPhoneUrl] = useState('http://192.168.1.5:8080/video');
-  const [activePhoneStream, setActivePhoneStream] = useState('');
+
+  // Phone Stream Settings (Method 2: IP Webcam is primary)
+  const [phoneSubMode, setPhoneSubMode] = useState('app_ip'); // 'app_ip' (IP Webcam app) | 'browser'
+  const [phoneUrl, setPhoneUrl] = useState(() => {
+    return localStorage.getItem('cityeye_phone_ip_url') || 'http://192.168.1.5:8080/video';
+  });
+  const [activePhoneStream, setActivePhoneStream] = useState(() => {
+    return localStorage.getItem('cityeye_phone_ip_url') || '';
+  });
+  const [phoneStreamStatus, setPhoneStreamStatus] = useState('');
+  const [isLiveRelayActive, setIsLiveRelayActive] = useState(false);
+  const [relayFrameUrl, setRelayFrameUrl] = useState('');
+  const [relayFrameCount, setRelayFrameCount] = useState(0);
+
+  // Direct Hardware Webcam Stream via OpenCV (Bypasses browser locks)
   const [webcamActive, setWebcamActive] = useState(false);
   const [webcamError, setWebcamError] = useState('');
+  const [webcamStreamKey, setWebcamStreamKey] = useState(Date.now());
+
   const videoRef = useRef(null);
+  const cctvVideoRef = useRef(null);
   const streamRef = useRef(null);
+  const relayPollRef = useRef(null);
 
   const activeCount = cameras.filter((c) => c.is_active).length;
+  const localHostIp = window.location.hostname || '192.168.1.101';
+  const mobileBroadcasterUrl = `http://${localHostIp}:5173/mobile-camera`;
 
-  // Toggle Browser Webcam
-  const startWebcam = async () => {
+  // Start Device Webcam via Direct Python OpenCV Hardware Stream
+  const startWebcam = () => {
     setWebcamError('');
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      setWebcamActive(true);
-    } catch (err) {
-      console.error('Webcam error:', err);
-      setWebcamError(err.message || 'Unable to access device camera. Please check browser permissions.');
-      setWebcamActive(false);
-    }
+    setWebcamStreamKey(Date.now());
+    setWebcamActive(true);
   };
 
   const stopWebcam = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
     setWebcamActive(false);
   };
+
+  // Connect Third-Party Phone IP Webcam app
+  const handleConnectPhone = (e) => {
+    e.preventDefault();
+    let url = phoneUrl.trim();
+    if (!url) return;
+
+    // Normalise URL input
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://' + url;
+    }
+
+    try {
+      const parsed = new URL(url);
+      // Auto-append stream path if missing for common apps
+      if ((parsed.port === '8080' || parsed.port === '4747') && (parsed.pathname === '/' || parsed.pathname === '')) {
+        url = url.replace(/\/+$/, '') + '/video';
+      }
+    } catch (_) {}
+
+    setPhoneUrl(url);
+    setActivePhoneStream(url);
+    localStorage.setItem('cityeye_phone_ip_url', url);
+    setPhoneStreamStatus('Connected & Streaming');
+  };
+
+  // Poll for live mobile browser streamer frames from /api/v1/cameras/stream-frame
+  useEffect(() => {
+    if (streamMode === 'phone_ip' && phoneSubMode === 'browser') {
+      let isSubscribed = true;
+
+      const pollRelay = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/cameras/stream-frame?t=${Date.now()}`);
+          if (res.ok) {
+            const blob = await res.blob();
+            if (isSubscribed && blob.size > 500) {
+              const objUrl = URL.createObjectURL(blob);
+              setRelayFrameUrl((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return objUrl;
+              });
+              setIsLiveRelayActive(true);
+              setRelayFrameCount((prev) => prev + 1);
+            }
+          } else {
+            if (isSubscribed) setIsLiveRelayActive(false);
+          }
+        } catch (_) {
+          if (isSubscribed) setIsLiveRelayActive(false);
+        }
+      };
+
+      relayPollRef.current = setInterval(pollRelay, 120);
+
+      return () => {
+        isSubscribed = false;
+        if (relayPollRef.current) clearInterval(relayPollRef.current);
+      };
+    }
+  }, [streamMode, phoneSubMode]);
 
   useEffect(() => {
     return () => {
       stopWebcam();
+      if (relayFrameUrl) URL.revokeObjectURL(relayFrameUrl);
     };
   }, []);
-
-  const handleConnectPhone = (e) => {
-    e.preventDefault();
-    if (!phoneUrl.trim()) return;
-    setActivePhoneStream(phoneUrl.trim());
-  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -72,7 +129,7 @@ export default function OfficerCameras() {
         <div>
           <h1 className="welcome-title">CCTV & Live Camera Stations</h1>
           <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 2 }}>
-            Connected traffic surveillance, municipal CCTV nodes, and mobile camera feeds
+            Connected traffic surveillance, municipal CCTV nodes, smartphone camera streams, and laptop webcams
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -83,19 +140,19 @@ export default function OfficerCameras() {
       </div>
 
       {/* Main Grid: Stream Player + Camera Directory */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 24 }}>
         {/* Stream Player Card */}
         <div className="modern-card">
           <div className="card-header-row" style={{ marginBottom: 14 }}>
             <div className="card-title-group">
               <h3>
                 {streamMode === 'cctv'
-                  ? `Live Stream: ${selectedCam ? selectedCam.name : 'Select Stream'}`
+                  ? `Live CCTV Feed: ${selectedCam ? selectedCam.name : 'Select Stream'}`
                   : streamMode === 'phone_ip'
-                  ? '📱 Phone IP Live Stream'
-                  : '💻 Device / Laptop Webcam'}
+                  ? '📱 Smartphone Camera Feed'
+                  : '💻 Laptop / Device Webcam Feed'}
               </h3>
-              <p>YOLOv8 Edge Inference Feed • 1080p @ 30 FPS</p>
+              <p>YOLOv8 Edge Surveillance Feed • 1080p @ 30 FPS</p>
             </div>
 
             {/* Stream Mode Switcher */}
@@ -110,7 +167,7 @@ export default function OfficerCameras() {
                 className={`segmented-pill-btn ${streamMode === 'phone_ip' ? 'active' : ''}`}
                 onClick={() => { stopWebcam(); setStreamMode('phone_ip'); }}
               >
-                Phone IP
+                Phone Camera
               </button>
               <button
                 className={`segmented-pill-btn ${streamMode === 'device_webcam' ? 'active' : ''}`}
@@ -125,7 +182,7 @@ export default function OfficerCameras() {
           <div
             style={{
               width: '100%',
-              height: 360,
+              height: 380,
               background: '#090B0E',
               borderRadius: 18,
               border: '1px solid var(--color-border)',
@@ -137,16 +194,21 @@ export default function OfficerCameras() {
               justifyContent: 'center'
             }}
           >
-            {/* Mode 1: CCTV Live Surveillance Stream */}
+            {/* Mode 1: CCTV Live Video Feed */}
             {streamMode === 'cctv' && (
               <>
                 <video
+                  ref={cctvVideoRef}
                   key={selectedCam?.id || 'live-feed'}
                   src={resolveMediaUrl('/uploads/evidence/upload_4267e266.mp4')}
                   autoPlay
                   loop
                   muted
                   playsInline
+                  onCanPlay={(e) => {
+                    e.target.muted = true;
+                    e.target.play().catch(() => {});
+                  }}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div style={{
@@ -188,114 +250,251 @@ export default function OfficerCameras() {
               </>
             )}
 
-            {/* Mode 2: Phone IP Camera Feed */}
+            {/* Mode 2: Phone Camera Feed */}
             {streamMode === 'phone_ip' && (
               <>
-                {activePhoneStream ? (
-                  <img
-                    src={activePhoneStream}
-                    alt="Phone Live Stream"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    onError={() => {
-                      alert('Could not connect to phone stream. Ensure phone and PC are on the same Wi-Fi network and IP Webcam is running.');
-                      setActivePhoneStream('');
-                    }}
-                  />
-                ) : (
-                  <div style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-muted)' }}>
-                    <Smartphone size={44} color="var(--color-aquamarine)" style={{ margin: '0 auto 12px' }} />
-                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-navy)' }}>
-                      Connect Your Mobile Phone as a Camera
-                    </div>
-                    <p style={{ fontSize: 13, marginTop: 4, maxWidth: 380 }}>
-                      Enter your phone's IP Webcam URL below and click <strong>"Connect Stream"</strong> to view real-time footage.
-                    </p>
-                  </div>
+                {/* Sub-Mode A: Direct Browser Streaming */}
+                {phoneSubMode === 'browser' && (
+                  <>
+                    {isLiveRelayActive && relayFrameUrl ? (
+                      <>
+                        <img
+                          src={relayFrameUrl}
+                          alt="Live Phone Stream"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          top: 14,
+                          right: 14,
+                          background: '#10B981',
+                          color: '#000000',
+                          padding: '4px 10px',
+                          borderRadius: 9999,
+                          fontSize: 10,
+                          fontWeight: 800
+                        }}>
+                          ● PHONE LIVE BROADCAST ({relayFrameCount} Frames)
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-muted)', maxWidth: 420 }}>
+                        <Smartphone size={46} color="#38BDF8" style={{ margin: '0 auto 12px' }} />
+                        <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-navy)' }}>
+                          Stream Camera Directly from Your Phone
+                        </div>
+                        <p style={{ fontSize: 13, marginTop: 6, lineHeight: 1.5 }}>
+                          No third-party app needed! Open the link below on your phone browser (Chrome/Safari) and tap <strong>"Start Broadcasting"</strong>.
+                        </p>
+                        <div style={{
+                          marginTop: 12,
+                          background: 'rgba(56, 189, 248, 0.1)',
+                          border: '1px solid rgba(56, 189, 248, 0.3)',
+                          padding: '10px 14px',
+                          borderRadius: 10,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: '#0284C7',
+                          wordBreak: 'break-all'
+                        }}>
+                          {mobileBroadcasterUrl}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
-                {activePhoneStream && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 14,
-                    right: 14,
-                    background: '#10B981',
-                    color: '#000000',
-                    padding: '4px 10px',
-                    borderRadius: 9999,
-                    fontSize: 10,
-                    fontWeight: 800
-                  }}>
-                    ● LIVE PHONE FEED
-                  </div>
+
+                {/* Sub-Mode B: External IP Webcam App Stream */}
+                {phoneSubMode === 'app_ip' && (
+                  <>
+                    {activePhoneStream ? (
+                      <>
+                        <img
+                          src={activePhoneStream}
+                          alt="IP Webcam Stream"
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                          onLoad={() => setPhoneStreamStatus('Connected & Streaming')}
+                          onError={() => {
+                            setPhoneStreamStatus('Stream connection error. Verify phone app is running.');
+                          }}
+                        />
+                        <div style={{
+                          position: 'absolute',
+                          top: 14,
+                          right: 14,
+                          background: '#10B981',
+                          color: '#000000',
+                          padding: '4px 10px',
+                          borderRadius: 9999,
+                          fontSize: 10,
+                          fontWeight: 800
+                        }}>
+                          ● IP WEBCAM STREAM
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-muted)' }}>
+                        <Wifi size={44} color="#10B981" style={{ margin: '0 auto 12px' }} />
+                        <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-navy)' }}>
+                          Connect IP Webcam / DroidCam Stream
+                        </div>
+                        <p style={{ fontSize: 13, marginTop: 4, maxWidth: 380 }}>
+                          Enter your phone app's streaming URL (e.g. <code>http://192.168.1.5:8080/video</code>) below.
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
 
-            {/* Mode 3: Device / Laptop Webcam */}
+            {/* Mode 3: Laptop / USB Webcam via Direct OpenCV Stream */}
             {streamMode === 'device_webcam' && (
               <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: webcamActive ? 'block' : 'none'
-                  }}
-                />
-                {!webcamActive && (
-                  <div style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-muted)' }}>
-                    <Video size={44} color="var(--color-aquamarine)" style={{ margin: '0 auto 12px' }} />
+                {webcamActive ? (
+                  <>
+                    <img
+                      key={webcamStreamKey}
+                      src={`${API_BASE}/cameras/webcam-stream?t=${webcamStreamKey}`}
+                      alt="OpenCV Live Hardware Webcam"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={() => {
+                        setWebcamError('Unable to connect to camera via OpenCV hardware interface.');
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: 14,
+                      right: 14,
+                      background: '#10B981',
+                      color: '#000000',
+                      padding: '4px 10px',
+                      borderRadius: 9999,
+                      fontSize: 10,
+                      fontWeight: 800
+                    }}>
+                      ● WEBCAM LIVE (OPENCV HARDWARE)
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 24, color: 'var(--color-text-muted)', maxWidth: 380 }}>
+                    <Video size={44} color="#38BDF8" style={{ margin: '0 auto 12px' }} />
                     <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-navy)' }}>
                       Device Webcam Feed
                     </div>
-                    <p style={{ fontSize: 13, marginTop: 4, maxWidth: 360 }}>
-                      Click <strong>"Start Webcam"</strong> to stream directly from your PC or laptop camera.
+                    <p style={{ fontSize: 13, marginTop: 4 }}>
+                      Click <strong>"Start Webcam"</strong> to stream live from your PC or laptop camera directly via hardware interface.
                     </p>
                     {webcamError && (
-                      <div style={{ marginTop: 10, color: '#EF4444', fontSize: 12 }}>
+                      <div style={{ marginTop: 10, color: '#EF4444', fontSize: 12, background: 'rgba(239, 68, 68, 0.1)', padding: 8, borderRadius: 8 }}>
                         {webcamError}
                       </div>
                     )}
-                  </div>
-                )}
-                {webcamActive && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 14,
-                    right: 14,
-                    background: '#10B981',
-                    color: '#000000',
-                    padding: '4px 10px',
-                    borderRadius: 9999,
-                    fontSize: 10,
-                    fontWeight: 800
-                  }}>
-                    ● WEBCAM LIVE
                   </div>
                 )}
               </>
             )}
           </div>
 
-          {/* Sub-Controls depending on selected mode */}
+          {/* Sub-Controls for Phone Camera Mode */}
           {streamMode === 'phone_ip' && (
-            <form onSubmit={handleConnectPhone} style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              <input
-                className="form-control"
-                style={{ flex: 1 }}
-                placeholder="http://192.168.1.5:8080/video"
-                value={phoneUrl}
-                onChange={(e) => setPhoneUrl(e.target.value)}
-              />
-              <button type="submit" className="btn-pill-primary" style={{ padding: '0 18px', whiteSpace: 'nowrap' }}>
-                <Wifi size={15} /> Connect Stream
-              </button>
-            </form>
+            <div style={{ marginBottom: 16 }}>
+              {/* Phone Method Tabs */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <button
+                  onClick={() => setPhoneSubMode('browser')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: phoneSubMode === 'browser' ? '#0284C7' : 'var(--color-card-subtle)',
+                    color: phoneSubMode === 'browser' ? '#FFFFFF' : 'var(--color-text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Smartphone size={14} /> Method 1: Phone Browser (No App Required)
+                </button>
+                <button
+                  onClick={() => setPhoneSubMode('app_ip')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: phoneSubMode === 'app_ip' ? '#0284C7' : 'var(--color-card-subtle)',
+                    color: phoneSubMode === 'app_ip' ? '#FFFFFF' : 'var(--color-text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6
+                  }}
+                >
+                  <Wifi size={14} /> Method 2: IP Webcam / DroidCam App
+                </button>
+              </div>
+
+              {phoneSubMode === 'browser' && (
+                <div style={{
+                  background: 'var(--color-card-subtle)',
+                  padding: '12px 16px',
+                  borderRadius: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12
+                }}>
+                  <div style={{ fontSize: 12, color: 'var(--color-navy)' }}>
+                    Open on your phone: <strong style={{ color: '#0284C7' }}>{mobileBroadcasterUrl}</strong>
+                  </div>
+                  <button
+                    onClick={() => window.open('/mobile-camera', '_blank')}
+                    style={{
+                      background: '#10B981',
+                      color: '#000000',
+                      border: 'none',
+                      borderRadius: 8,
+                      padding: '6px 12px',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6
+                    }}
+                  >
+                    <ExternalLink size={13} /> Test Mobile Streamer
+                  </button>
+                </div>
+              )}
+
+              {phoneSubMode === 'app_ip' && (
+                <form onSubmit={handleConnectPhone} style={{ display: 'flex', gap: 10 }}>
+                  <input
+                    className="form-control"
+                    style={{ flex: 1 }}
+                    placeholder="http://192.168.1.5:8080/video"
+                    value={phoneUrl}
+                    onChange={(e) => setPhoneUrl(e.target.value)}
+                  />
+                  <button type="submit" className="btn-pill-primary" style={{ padding: '0 18px', whiteSpace: 'nowrap' }}>
+                    <Wifi size={15} /> Connect Stream
+                  </button>
+                </form>
+              )}
+            </div>
           )}
 
+          {/* Sub-Controls for Webcam */}
           {streamMode === 'device_webcam' && (
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
               {!webcamActive ? (
@@ -324,7 +523,7 @@ export default function OfficerCameras() {
               <div>
                 <div style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Coordinates & Status</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-navy)', marginTop: 2 }}>
-                  {selectedCam.latitude}, {selectedCam.longitude} • <span style={{ color: 'var(--color-aquamarine)' }}>Active</span>
+                  {selectedCam.latitude}, {selectedCam.longitude} • <span style={{ color: 'var(--color-aquamarine)' }}>Active Online</span>
                 </div>
               </div>
             </div>
@@ -370,84 +569,6 @@ export default function OfficerCameras() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Step-by-Step Interactive Guide: Connecting Your Phone as a Camera */}
-      <div className="modern-card" style={{ padding: '24px 28px' }}>
-        <div className="card-header-row" style={{ marginBottom: 16 }}>
-          <div className="card-title-group" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--color-aquamarine-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-aquamarine)' }}>
-              <Smartphone size={20} />
-            </div>
-            <div>
-              <h3>How to Connect Your Phone as a Camera to CityEye</h3>
-              <p>Simple 3-minute setup using free tools</p>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 20 }}>
-          {/* Method A */}
-          <div style={{ background: 'var(--color-card-subtle)', padding: 18, borderRadius: 14, border: '1px solid var(--color-border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ background: 'var(--color-aquamarine)', color: '#000', fontWeight: 800, fontSize: 11, padding: '2px 8px', borderRadius: 6 }}>
-                METHOD 1
-              </span>
-              <strong style={{ fontSize: 13, color: 'var(--color-navy)' }}>IP Webcam (Wi-Fi)</strong>
-            </div>
-            <ol style={{ fontSize: 12, color: 'var(--color-text-muted)', paddingLeft: 16, lineHeight: 1.6, margin: 0 }}>
-              <li>Install <strong>IP Webcam</strong> (Android) or <strong>IP Camera Lite</strong> (iOS).</li>
-              <li>Connect phone to the <strong>same Wi-Fi</strong> as this PC.</li>
-              <li>Open the app, scroll to bottom and tap <strong>Start Server</strong>.</li>
-              <li>Note the IP shown on screen (e.g. <code>http://192.168.1.5:8080</code>).</li>
-            </ol>
-          </div>
-
-          {/* Method B */}
-          <div style={{ background: 'var(--color-card-subtle)', padding: 18, borderRadius: 14, border: '1px solid var(--color-border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ background: '#38BDF8', color: '#000', fontWeight: 800, fontSize: 11, padding: '2px 8px', borderRadius: 6 }}>
-                METHOD 2
-              </span>
-              <strong style={{ fontSize: 13, color: 'var(--color-navy)' }}>Iriun / DroidCam (USB)</strong>
-            </div>
-            <ol style={{ fontSize: 12, color: 'var(--color-text-muted)', paddingLeft: 16, lineHeight: 1.6, margin: 0 }}>
-              <li>Install <strong>Iriun Webcam</strong> on both your phone & PC.</li>
-              <li>Connect phone via USB cable or Wi-Fi.</li>
-              <li>Your phone instantly behaves like a standard Windows webcam.</li>
-              <li>Switch to the <strong>Webcam</strong> tab above to view live.</li>
-            </ol>
-          </div>
-
-          {/* Real AI Inference Command */}
-          <div style={{ background: 'var(--color-card-subtle)', padding: 18, borderRadius: 14, border: '1px solid var(--color-border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ background: '#F59E0B', color: '#000', fontWeight: 800, fontSize: 11, padding: '2px 8px', borderRadius: 6 }}>
-                LIVE AI RUN
-              </span>
-              <strong style={{ fontSize: 13, color: 'var(--color-navy)' }}>Run Real-Time Detection</strong>
-            </div>
-            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 8 }}>
-              Run this command in terminal to detect defects live through your phone:
-            </p>
-            <div style={{
-              background: '#090B0E',
-              padding: '10px 12px',
-              borderRadius: 8,
-              border: '1px solid var(--color-border)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: '#34D399',
-              overflowX: 'auto',
-              whiteSpace: 'nowrap'
-            }}>
-              python ml/inference/detect.py --source http://&lt;phone-ip&gt;:8080/video
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 6 }}>
-              Or for USB/Webcam mode: <code>python ml/inference/detect.py --source 0</code>
-            </div>
           </div>
         </div>
       </div>

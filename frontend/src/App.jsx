@@ -1,10 +1,11 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { ReportsProvider } from './context/ReportsContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './auth/ProtectedRoute';
 import AppLayout from './components/AppLayout';
 import LoginPage from './pages/LoginPage';
+import MobileCameraStreamer from './pages/MobileCameraStreamer';
 
 // Officer Pages
 import OfficerDashboard from './pages/officer/OfficerDashboard';
@@ -40,6 +41,7 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/mobile-camera" element={<MobileCameraStreamer />} />
 
               {/* Senior Officer Routes */}
               <Route

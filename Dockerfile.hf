@@ -1,0 +1,36 @@
+FROM python:3.11-slim
+
+# Install system dependencies required by OpenCV and PyTorch
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Hugging Face Spaces requires running as user 1000
+RUN useradd -m -u 1000 user
+USER user
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH \
+    PORT=7860 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR $HOME/app
+
+# Install Python requirements
+COPY --chown=user:user backend/requirements.txt ./
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Copy application files and model weights
+COPY --chown=user:user backend/ ./backend/
+COPY --chown=user:user ml/ ./ml/
+COPY --chown=user:user run.py ./
+
+# Create upload media directories with correct permissions
+RUN mkdir -p uploads/evidence uploads/resolution backend/uploads/evidence backend/uploads/resolution
+
+# Expose standard Hugging Face Spaces port
+EXPOSE 7860
+
+# Start CityEye FastAPI server
+CMD ["python", "run.py"]
